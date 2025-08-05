@@ -1,0 +1,12 @@
+{
+  "item.rustcraft.scrap": "Scrap",
+  "item.rustcraft.cloth": "Cloth",
+  "item.rustcraft.low_grade_fuel": "Low Grade Fuel",
+  "item.rustcraft.sulfur": "Sulfur",
+  "item.rustcraft.animal_fat": "Animal Fat",
+
+  "block.rustcraft.sulfur_ore": "Sulfur Ore",
+
+  "group.rustcraft.rustcraft_items": "RustCraft Items",
+  "group.rustcraft.rustcraft_blocks": "RustCraft Blocks"
+}

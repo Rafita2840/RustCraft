@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "rustcraft:block/sulfur_ore"
+    }
+  }
+}
