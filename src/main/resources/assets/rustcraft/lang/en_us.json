@@ -4,8 +4,11 @@
   "item.rustcraft.low_grade_fuel": "Low Grade Fuel",
   "item.rustcraft.sulfur": "Sulfur",
   "item.rustcraft.animal_fat": "Animal Fat",
+  "item.rustcraft.hammer": "Hammer",
 
   "block.rustcraft.sulfur_ore": "Sulfur Ore",
+
+
 
   "group.rustcraft.rustcraft_items": "RustCraft Items",
   "group.rustcraft.rustcraft_blocks": "RustCraft Blocks"

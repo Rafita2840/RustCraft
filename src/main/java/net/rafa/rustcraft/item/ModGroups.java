@@ -22,6 +22,7 @@ public class ModGroups {
                         entries.add(ModItems.LOW_GRADE_FUEL);
                         entries.add(ModItems.SULFUR);
                         entries.add(ModItems.ANIMAL_FAT);
+                        entries.add(ModItems.HAMMER);
                     }).build());
 
     public static final ItemGroup RUSTCRAFT_BLOCKS_GROUP = Registry.register(Registries.ITEM_GROUP,

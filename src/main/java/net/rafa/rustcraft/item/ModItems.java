@@ -5,6 +5,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.rafa.rustcraft.RustCraft;
+import net.rafa.rustcraft.item.custom.HammerItem;
 
 public class ModItems {
 
@@ -13,6 +14,7 @@ public class ModItems {
     public static final Item CLOTH = registerItem("cloth", new Item(new Item.Settings()));
     public static final Item SULFUR = registerItem("sulfur", new Item(new Item.Settings()));
     public static final Item ANIMAL_FAT = registerItem("animal_fat", new Item(new Item.Settings()));
+    public static final Item HAMMER = registerItem("hammer", new HammerItem(new Item.Settings()));
 
 
 
