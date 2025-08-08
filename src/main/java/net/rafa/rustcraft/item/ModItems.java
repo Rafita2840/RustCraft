@@ -5,6 +5,9 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.rafa.rustcraft.RustCraft;
+import net.rafa.rustcraft.item.custom.BlueprintFloorItem;
+import net.rafa.rustcraft.item.custom.BlueprintStairsItem;
+import net.rafa.rustcraft.item.custom.BlueprintWallItem;
 import net.rafa.rustcraft.item.custom.HammerItem;
 
 public class ModItems {
@@ -14,7 +17,11 @@ public class ModItems {
     public static final Item CLOTH = registerItem("cloth", new Item(new Item.Settings()));
     public static final Item SULFUR = registerItem("sulfur", new Item(new Item.Settings()));
     public static final Item ANIMAL_FAT = registerItem("animal_fat", new Item(new Item.Settings()));
+
     public static final Item HAMMER = registerItem("hammer", new HammerItem(new Item.Settings()));
+    public static final Item BLUEPRINT_FLOOR = registerItem("blueprint_floor", new BlueprintFloorItem(new Item.Settings()));
+    public static final Item BLUEPRINT_STAIRS = registerItem("blueprint_stairs", new BlueprintStairsItem(new Item.Settings()));
+    public static final Item BLUEPRINT_WALL = registerItem("blueprint_wall", new BlueprintWallItem(new Item.Settings()));
 
 
 

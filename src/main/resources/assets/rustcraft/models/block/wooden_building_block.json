@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all" : "rustcraft:block/wooden_building_block_side"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "rustcraft:block/center_wooden_building_block"
+    }
+  }
+}

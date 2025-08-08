@@ -21,6 +21,19 @@ public class ModBlocks {
                             .requiresTool()
                             .sounds(BlockSoundGroup.NETHER_GOLD_ORE)));
 
+    public static final Block WOODEN_BUILDING_BLOCK = registerBlock("wooden_building_block", new Block(
+            AbstractBlock.Settings.create()
+                    .strength(-1)
+                    .requiresTool()
+                    ));
+
+    public static final Block CENTER_WOODEN_BUILDING_BLOCK = registerBlock("center_wooden_building_block", new Block(
+            AbstractBlock.Settings.create()
+                    .strength(-1)
+                    .requiresTool()
+    ));
+
+
     private static Block registerBlock(String name, Block block) {
         registerBlockItem(name, block);
         return Registry.register(Registries.BLOCK, Identifier.of(RustCraft.MOD_ID, name), block);

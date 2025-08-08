@@ -4,9 +4,15 @@
   "item.rustcraft.low_grade_fuel": "Low Grade Fuel",
   "item.rustcraft.sulfur": "Sulfur",
   "item.rustcraft.animal_fat": "Animal Fat",
+
   "item.rustcraft.hammer": "Hammer",
+  "item.rustcraft.blueprint_floor": "Blueprint (Floor)",
+  "item.rustcraft.blueprint_stairs": "Blueprint (Stairs)",
+  "item.rustcraft.blueprint_wall": "Blueprint (Wall)",
 
   "block.rustcraft.sulfur_ore": "Sulfur Ore",
+  "block.rustcraft.center_wooden_building_block": "Center Wooden Building Block",
+  "block.rustcraft.wooden_building_block": "Wooden Building Block",
 
 
 

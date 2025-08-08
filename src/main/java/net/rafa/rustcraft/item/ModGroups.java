@@ -23,6 +23,9 @@ public class ModGroups {
                         entries.add(ModItems.SULFUR);
                         entries.add(ModItems.ANIMAL_FAT);
                         entries.add(ModItems.HAMMER);
+                        entries.add(ModItems.BLUEPRINT_FLOOR);
+                        entries.add(ModItems.BLUEPRINT_STAIRS);
+                        entries.add(ModItems.BLUEPRINT_WALL);
                     }).build());
 
     public static final ItemGroup RUSTCRAFT_BLOCKS_GROUP = Registry.register(Registries.ITEM_GROUP,
@@ -31,6 +34,8 @@ public class ModGroups {
                     .displayName(Text.translatable("group.rustcraft.rustcraft_blocks"))
                     .entries((displayContext, entries) -> {
                         entries.add(ModBlocks.SULFUR_ORE);
+                        entries.add(ModBlocks.WOODEN_BUILDING_BLOCK);
+                        entries.add(ModBlocks.CENTER_WOODEN_BUILDING_BLOCK);
                     }).build());
 
     public static void registerModItemGroups(){
