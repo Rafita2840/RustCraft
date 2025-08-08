@@ -7,59 +7,95 @@ import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.world.World;
+import net.rafa.rustcraft.block.ModBlocks;
 
 import java.util.Map;
 
 public class HammerItem extends Item {
 
-    private static final Map<Block, Block> HAMMER_MAP =
+    private static final Map<Block, Block> HAMMER_BLOCK_MAP =
             Map.of(
-                    Blocks.GRASS_BLOCK, Blocks.OAK_PLANKS,
-                    Blocks.OAK_PLANKS, Blocks.COBBLESTONE,
+                    ModBlocks.CENTER_WOODEN_BUILDING_BLOCK, Blocks.COBBLESTONE,
+                    Blocks.COBBLESTONE, Blocks.IRON_BLOCK,
+                    Blocks.IRON_BLOCK, Blocks.NETHERITE_BLOCK
+            );
+
+    private static final Map<Block, Block> HAMMER_FLOOR_CENTER_BLOCK =
+            Map.of(
+                    ModBlocks.CENTER_WOODEN_BUILDING_BLOCK, Blocks.COBBLESTONE,
                     Blocks.COBBLESTONE, Blocks.IRON_BLOCK,
                     Blocks.IRON_BLOCK, Blocks.NETHERITE_BLOCK
             );
 
     private static final Map<Block, Item> HAMMER_ITEM_MAP =
             Map.of(
-                    Blocks.GRASS_BLOCK, Items.OAK_PLANKS,
-                    Blocks.OAK_PLANKS, Items.COBBLESTONE,
+                    ModBlocks.CENTER_WOODEN_BUILDING_BLOCK, Items.COBBLESTONE,
                     Blocks.COBBLESTONE, Items.IRON_INGOT,
                     Blocks.IRON_BLOCK, Items.NETHERITE_INGOT
+            );
+
+    private static final Map<Block, SoundEvent> HAMMER_SOUND_MAP =
+            Map.of(
+                    ModBlocks.CENTER_WOODEN_BUILDING_BLOCK, SoundEvents.ENTITY_IRON_GOLEM_REPAIR,
+                    Blocks.COBBLESTONE, SoundEvents.BLOCK_SMITHING_TABLE_USE,
+                    Blocks.IRON_BLOCK, SoundEvents.BLOCK_ANVIL_USE
             );
 
     public HammerItem(Settings settings) {
         super(settings);
     }
 
-    private void changeBlock(World world, ItemUsageContext context, Block clickedBlock, int offset) {
+    private void changeBlock(World world, ItemUsageContext context, Block clickedBlock) {
         if (!world.isClient) {
             ServerPlayerEntity player = ((ServerPlayerEntity) context.getPlayer());
             if (player != null) {
+                int[][] posAndAmount = new int[9][2];
+                int k = 0;
                 int count = 0;
-                int counter = 0;
-                while (counter < 9) {
-                    if (player.getOffHandStack().isOf(HAMMER_ITEM_MAP.get(clickedBlock))) {
-                        count++;
-                        player.getOffHandStack().decrement(1);
+                boolean success = false;
+                while (!success && k < 9) {
+                    posAndAmount[k][0] = player.getInventory().getSlotWithStack(HAMMER_ITEM_MAP.get(clickedBlock).getDefaultStack());
+                    if (posAndAmount[k][0] == -1)
+                        break;
+                    posAndAmount[k][1] = player.getInventory().getStack(posAndAmount[k][0]).getCount();
+                    count += posAndAmount[k][1];
+                    if (count < 9) {
+                        player.getInventory().removeStack(posAndAmount[k][0], posAndAmount[k][1]);
+                        k++;
+                    } else {
+                        if (k > 0)
+                            player.getInventory().removeStack(posAndAmount[k][0], posAndAmount[k][1]);
+                        success = true;
                     }
-                    counter++;
                 }
-                if (count == 9) {
+                if (success || k == 8) {
+                    if (k==0)
+                        player.getInventory().removeStack(posAndAmount[k][0], 9);
                     for (int i = -1; i < 2; i++) {
                         for (int j = -1; j < 2; j++) {
-                            world.setBlockState(context.getBlockPos().add(i, offset, j), HAMMER_MAP.get(clickedBlock).getDefaultState());
+                            if (i != 0 || j != 0)
+                                world.setBlockState(context.getBlockPos().add(i, 0, j), HAMMER_FLOOR_CENTER_BLOCK.get(clickedBlock).getDefaultState());
                         }
                     }
-                    player.playSoundToPlayer(SoundEvents.BLOCK_ANVIL_USE, SoundCategory.BLOCKS, 50, 1);
+                    world.setBlockState(context.getBlockPos(), HAMMER_FLOOR_CENTER_BLOCK.get(clickedBlock).getDefaultState());
+                    player.playSoundToPlayer(HAMMER_SOUND_MAP.get(clickedBlock), SoundCategory.BLOCKS, 20, 1);
+                } else  {
+                    player.playSoundToPlayer(SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundCategory.BLOCKS, 20, 1);
                 }
-                else {
-                    for (int k = 0; k < count; k++)
-                        player.getInventory().insertStack(HAMMER_ITEM_MAP.get(clickedBlock).asItem().getDefaultStack());
-                    player.playSoundToPlayer(SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundCategory.BLOCKS, 50, 1);
+                if (k > 0 && !success){
+                    for (int n = 0; n < k; n++){
+                        for (int l = 0; l < posAndAmount[n][1]; l++)
+                            player.getInventory().insertStack(posAndAmount[n][0], HAMMER_ITEM_MAP.get(clickedBlock).getDefaultStack());
+                    }
+                }
+                if (k > 0 && success){
+                    for (int p = 0; p < count - 9; p++)
+                        player.getInventory().insertStack(posAndAmount[k][0], HAMMER_ITEM_MAP.get(clickedBlock).getDefaultStack());
+
                 }
             }
         }
@@ -69,42 +105,13 @@ public class HammerItem extends Item {
     public ActionResult useOnBlock(ItemUsageContext context) {
         World world = context.getWorld();
         Block clickedBlock = world.getBlockState(context.getBlockPos()).getBlock();
-        Block[] corners = new Block[4];
-        if (HAMMER_MAP.containsKey(clickedBlock)) {
-            corners[0] = world.getBlockState(context.getBlockPos().add(1, 0, 1)).getBlock();
-            corners[1] = world.getBlockState(context.getBlockPos().add(-1, 0, -1)).getBlock();
-            corners[2] = world.getBlockState(context.getBlockPos().add(1, 0, -1)).getBlock();
-            corners[3] = world.getBlockState(context.getBlockPos().add(-1, 0, 1)).getBlock();
-            boolean same = false;
-            int counter = 0;
-            int i = 0;
-            while (!same) {
-                if (corners[i].equals(clickedBlock))
-                    counter++;
-                i++;
-                if (counter == 4)
-                    same = true;
-                if (i == 4)
-                    break;
-            }
-            if (same) {
-                if (clickedBlock.equals(Blocks.GRASS_BLOCK))
-                    changeBlock(world, context, clickedBlock, 1);
-                else
-                    changeBlock(world, context, clickedBlock, 0);
+        if (!world.isClient) {
+            if (HAMMER_FLOOR_CENTER_BLOCK.containsKey(clickedBlock)) {
+                changeBlock(world, context, clickedBlock);
             } else {
-                if (!world.isClient) {
-                    ServerPlayerEntity player = ((ServerPlayerEntity) context.getPlayer());
-                    if (player != null)
-                        player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 50, 1);
-                }
-            }
-        }
-        else {
-            if (!world.isClient) {
                 ServerPlayerEntity player = ((ServerPlayerEntity) context.getPlayer());
                 if (player != null)
-                    player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 50, 1);
+                    player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 1, 1);
             }
         }
         return ActionResult.SUCCESS;
