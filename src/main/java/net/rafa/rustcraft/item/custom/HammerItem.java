@@ -13,6 +13,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import net.rafa.rustcraft.block.ModBlocks;
+import net.rafa.rustcraft.item.ModItems;
 
 import java.util.Map;
 
@@ -27,7 +28,7 @@ public class HammerItem extends Item {
 
     private static final Map<Block, Item> HAMMER_ITEM_MAP =
             Map.of(
-                    ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, Items.COBBLESTONE,
+                    ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModItems.STONE,
                     ModBlocks.STONE_BUILDING_BLOCK_CENTER, Items.IRON_INGOT,
                     Blocks.IRON_BLOCK, Items.NETHERITE_INGOT
             );
@@ -101,7 +102,7 @@ public class HammerItem extends Item {
             }
         }
         for (int n = 0; n < 9; n++)
-            player.getInventory().offerOrDrop(Items.OAK_PLANKS.getDefaultStack());
+            player.getInventory().offerOrDrop(ModItems.WOOD.getDefaultStack());
     }
 
     private void removeWall(World world, ItemUsageContext context, ServerPlayerEntity player) {
@@ -114,7 +115,7 @@ public class HammerItem extends Item {
         if (!world.isClient) {
             ServerPlayerEntity player = ((ServerPlayerEntity) context.getPlayer());
             if (player != null) {
-                if (player.isInSneakingPose() &&
+                if (player.isSneaking() &&
                         clickedBlock.equals(ModBlocks.WOODEN_BUILDING_BLOCK_CENTER)) {
                     if (context.getSide().equals(Direction.DOWN) || context.getSide().equals(Direction.UP))
                         removeFloor(world, context, player);

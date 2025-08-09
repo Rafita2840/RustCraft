@@ -19,7 +19,7 @@ public class BlueprintStairsItem extends Item {
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
         if (!world.isClient){
             ServerPlayerEntity player = ((ServerPlayerEntity) user);
-            if (player.isInSneakingPose()){
+            if (player.isSneaking()){
                 int pos = player.getInventory().getSlotWithStack(player.getStackInHand(hand));
                 player.getInventory().removeStack(pos);
                 player.getInventory().insertStack(pos, ModItems.BLUEPRINT_FLOOR.getDefaultStack());

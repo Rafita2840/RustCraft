@@ -24,8 +24,8 @@ public class ModGroups {
                         entries.add(ModItems.ANIMAL_FAT);
                         entries.add(ModItems.HAMMER);
                         entries.add(ModItems.BLUEPRINT_FLOOR);
-                        entries.add(ModItems.BLUEPRINT_STAIRS);
-                        entries.add(ModItems.BLUEPRINT_WALL);
+                        entries.add(ModItems.WOOD);
+                        entries.add(ModItems.STONE);
                     }).build());
 
     public static final ItemGroup RUSTCRAFT_BLOCKS_GROUP = Registry.register(Registries.ITEM_GROUP,

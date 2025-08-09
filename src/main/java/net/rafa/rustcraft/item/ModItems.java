@@ -17,6 +17,8 @@ public class ModItems {
     public static final Item CLOTH = registerItem("cloth", new Item(new Item.Settings()));
     public static final Item SULFUR = registerItem("sulfur", new Item(new Item.Settings()));
     public static final Item ANIMAL_FAT = registerItem("animal_fat", new Item(new Item.Settings()));
+    public static final Item STONE = registerItem("stone", new Item(new Item.Settings()));
+    public static final Item WOOD = registerItem("wood", new Item(new Item.Settings()));
 
     public static final Item HAMMER = registerItem("hammer", new HammerItem(new Item.Settings()));
     public static final Item BLUEPRINT_FLOOR = registerItem("blueprint_floor", new BlueprintFloorItem(new Item.Settings()));
