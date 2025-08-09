@@ -11,9 +11,11 @@
   "item.rustcraft.blueprint_wall": "Blueprint (Wall)",
 
   "block.rustcraft.sulfur_ore": "Sulfur Ore",
-  "block.rustcraft.center_wooden_building_block": "Center Wooden Building Block",
-  "block.rustcraft.wooden_building_block": "Wooden Building Block",
 
+  "block.rustcraft.wooden_building_block_center": "Center Wooden Building Block",
+  "block.rustcraft.wooden_building_block": "Wooden Building Block",
+  "block.rustcraft.stone_building_block_center": "Center Stone Building Block",
+  "block.rustcraft.stone_building_block": "Stone Building Block",
 
 
   "group.rustcraft.rustcraft_items": "RustCraft Items",

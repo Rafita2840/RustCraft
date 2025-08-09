@@ -80,7 +80,7 @@ public class BlueprintFloorItem extends Item {
                     break;
             }
             if (same && otherSame) {
-                changeBlock(world, context, clickedBlock);
+                changeBlock(world, context);
             } else {
                 if (!world.isClient) {
                     ServerPlayerEntity player = ((ServerPlayerEntity) context.getPlayer());
@@ -99,7 +99,7 @@ public class BlueprintFloorItem extends Item {
         return ActionResult.SUCCESS;
     }
 
-    private void changeBlock(World world, ItemUsageContext context, Block clickedBlock) {
+    private void changeBlock(World world, ItemUsageContext context) {
         if (!world.isClient) {
             ServerPlayerEntity player = ((ServerPlayerEntity) context.getPlayer());
             if (player != null) {
@@ -131,7 +131,7 @@ public class BlueprintFloorItem extends Item {
                                 world.setBlockState(context.getBlockPos().add(i, 1, j), ModBlocks.WOODEN_BUILDING_BLOCK.getDefaultState());
                         }
                     }
-                    world.setBlockState(context.getBlockPos().add(0, 1, 0), ModBlocks.CENTER_WOODEN_BUILDING_BLOCK.getDefaultState());
+                    world.setBlockState(context.getBlockPos().add(0, 1, 0), ModBlocks.WOODEN_BUILDING_BLOCK_CENTER.getDefaultState());
                     player.playSoundToPlayer(SoundEvents.ENTITY_VILLAGER_WORK_FLETCHER, SoundCategory.BLOCKS, 20, 1);
                 } else  {
                     player.playSoundToPlayer(SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundCategory.BLOCKS, 20, 1);

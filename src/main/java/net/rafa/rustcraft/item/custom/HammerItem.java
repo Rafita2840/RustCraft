@@ -10,6 +10,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import net.rafa.rustcraft.block.ModBlocks;
 
@@ -17,31 +18,24 @@ import java.util.Map;
 
 public class HammerItem extends Item {
 
-    private static final Map<Block, Block> HAMMER_BLOCK_MAP =
+    private static final Map<Block, Block> HAMMER_CENTER_BLOCK =
             Map.of(
-                    ModBlocks.CENTER_WOODEN_BUILDING_BLOCK, Blocks.COBBLESTONE,
-                    Blocks.COBBLESTONE, Blocks.IRON_BLOCK,
-                    Blocks.IRON_BLOCK, Blocks.NETHERITE_BLOCK
-            );
-
-    private static final Map<Block, Block> HAMMER_FLOOR_CENTER_BLOCK =
-            Map.of(
-                    ModBlocks.CENTER_WOODEN_BUILDING_BLOCK, Blocks.COBBLESTONE,
-                    Blocks.COBBLESTONE, Blocks.IRON_BLOCK,
+                    ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK_CENTER,
+                    ModBlocks.STONE_BUILDING_BLOCK_CENTER, Blocks.IRON_BLOCK,
                     Blocks.IRON_BLOCK, Blocks.NETHERITE_BLOCK
             );
 
     private static final Map<Block, Item> HAMMER_ITEM_MAP =
             Map.of(
-                    ModBlocks.CENTER_WOODEN_BUILDING_BLOCK, Items.COBBLESTONE,
-                    Blocks.COBBLESTONE, Items.IRON_INGOT,
+                    ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, Items.COBBLESTONE,
+                    ModBlocks.STONE_BUILDING_BLOCK_CENTER, Items.IRON_INGOT,
                     Blocks.IRON_BLOCK, Items.NETHERITE_INGOT
             );
 
     private static final Map<Block, SoundEvent> HAMMER_SOUND_MAP =
             Map.of(
-                    ModBlocks.CENTER_WOODEN_BUILDING_BLOCK, SoundEvents.ENTITY_IRON_GOLEM_REPAIR,
-                    Blocks.COBBLESTONE, SoundEvents.BLOCK_SMITHING_TABLE_USE,
+                    ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, SoundEvents.ENTITY_IRON_GOLEM_REPAIR,
+                    ModBlocks.STONE_BUILDING_BLOCK_CENTER, SoundEvents.BLOCK_SMITHING_TABLE_USE,
                     Blocks.IRON_BLOCK, SoundEvents.BLOCK_ANVIL_USE
             );
 
@@ -49,9 +43,8 @@ public class HammerItem extends Item {
         super(settings);
     }
 
-    private void changeBlock(World world, ItemUsageContext context, Block clickedBlock) {
+    private void changeBlock(World world, ItemUsageContext context, Block clickedBlock, ServerPlayerEntity player) {
         if (!world.isClient) {
-            ServerPlayerEntity player = ((ServerPlayerEntity) context.getPlayer());
             if (player != null) {
                 int[][] posAndAmount = new int[9][2];
                 int k = 0;
@@ -78,10 +71,10 @@ public class HammerItem extends Item {
                     for (int i = -1; i < 2; i++) {
                         for (int j = -1; j < 2; j++) {
                             if (i != 0 || j != 0)
-                                world.setBlockState(context.getBlockPos().add(i, 0, j), HAMMER_FLOOR_CENTER_BLOCK.get(clickedBlock).getDefaultState());
+                                world.setBlockState(context.getBlockPos().add(i, 0, j), HAMMER_CENTER_BLOCK.get(clickedBlock).getDefaultState());
                         }
                     }
-                    world.setBlockState(context.getBlockPos(), HAMMER_FLOOR_CENTER_BLOCK.get(clickedBlock).getDefaultState());
+                    world.setBlockState(context.getBlockPos(), HAMMER_CENTER_BLOCK.get(clickedBlock).getDefaultState());
                     player.playSoundToPlayer(HAMMER_SOUND_MAP.get(clickedBlock), SoundCategory.BLOCKS, 20, 1);
                 } else  {
                     player.playSoundToPlayer(SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundCategory.BLOCKS, 20, 1);
@@ -101,17 +94,37 @@ public class HammerItem extends Item {
         }
     }
 
+    private void removeFloor(World world, ItemUsageContext context, ServerPlayerEntity player) {
+        for (int i = -1; i < 2; i++) {
+            for (int j = -1; j < 2; j++) {
+                world.setBlockState(context.getBlockPos().add(i, 0, j), Blocks.AIR.getDefaultState());
+            }
+        }
+        for (int n = 0; n < 9; n++)
+            player.getInventory().offerOrDrop(Items.OAK_PLANKS.getDefaultStack());
+    }
+
+    private void removeWall(World world, ItemUsageContext context, ServerPlayerEntity player) {
+    }
+
     @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
         World world = context.getWorld();
         Block clickedBlock = world.getBlockState(context.getBlockPos()).getBlock();
         if (!world.isClient) {
-            if (HAMMER_FLOOR_CENTER_BLOCK.containsKey(clickedBlock)) {
-                changeBlock(world, context, clickedBlock);
-            } else {
-                ServerPlayerEntity player = ((ServerPlayerEntity) context.getPlayer());
-                if (player != null)
+            ServerPlayerEntity player = ((ServerPlayerEntity) context.getPlayer());
+            if (player != null) {
+                if (player.isInSneakingPose() &&
+                        clickedBlock.equals(ModBlocks.WOODEN_BUILDING_BLOCK_CENTER)) {
+                    if (context.getSide().equals(Direction.DOWN) || context.getSide().equals(Direction.UP))
+                        removeFloor(world, context, player);
+                    else
+                        removeWall(world, context, player);
+                } else if (HAMMER_CENTER_BLOCK.containsKey(clickedBlock)) {
+                    changeBlock(world, context, clickedBlock, player);
+                } else {
                     player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 1, 1);
+                }
             }
         }
         return ActionResult.SUCCESS;
