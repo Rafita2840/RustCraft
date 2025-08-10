@@ -36,6 +36,8 @@ public class ModGroups {
                         entries.add(ModBlocks.SULFUR_ORE);
                         entries.add(ModBlocks.WOODEN_BUILDING_BLOCK);
                         entries.add(ModBlocks.WOODEN_BUILDING_BLOCK_CENTER);
+                        entries.add(ModBlocks.STONE_BUILDING_BLOCK);
+                        entries.add(ModBlocks.STONE_BUILDING_BLOCK_CENTER);
                     }).build());
 
     public static void registerModItemGroups(){

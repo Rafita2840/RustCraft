@@ -19,6 +19,13 @@ import java.util.Map;
 
 public class HammerItem extends Item {
 
+    private static final Map<Block, Block> HAMMER_BLOCKS =
+            Map.of(
+                    ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK,
+                    ModBlocks.STONE_BUILDING_BLOCK_CENTER, Blocks.IRON_BLOCK,
+                    Blocks.IRON_BLOCK, Blocks.NETHERITE_BLOCK
+            );
+
     private static final Map<Block, Block> HAMMER_CENTER_BLOCK =
             Map.of(
                     ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK_CENTER,
@@ -44,7 +51,41 @@ public class HammerItem extends Item {
         super(settings);
     }
 
-    private void changeBlock(World world, ItemUsageContext context, Block clickedBlock, ServerPlayerEntity player) {
+    @Override
+    public ActionResult useOnBlock(ItemUsageContext context) {
+        World world = context.getWorld();
+        Block clickedBlock = world.getBlockState(context.getBlockPos()).getBlock();
+        if (!world.isClient) {
+            ServerPlayerEntity player = ((ServerPlayerEntity) context.getPlayer());
+            if (player != null) {
+                if (player.isSneaking() &&
+                        clickedBlock.equals(ModBlocks.WOODEN_BUILDING_BLOCK_CENTER)) {
+                    if (context.getSide().equals(Direction.DOWN) || context.getSide().equals(Direction.UP))
+                        removeFloor(world, context, player); //por som e particulas
+                    else
+                        removeWall(world, context, player);
+                } else if (HAMMER_CENTER_BLOCK.containsKey(clickedBlock)) {
+                    if (context.getSide().equals(Direction.EAST) || context.getSide().equals(Direction.WEST)
+                            || context.getSide().equals(Direction.NORTH) || context.getSide().equals(Direction.SOUTH))
+                        upgradeWall(world, context, clickedBlock, player);
+                    else
+                        upgradeFloor(world, context, clickedBlock, player);
+
+                } else {
+                    player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 1, 1);
+                }
+            }
+        }
+        return ActionResult.SUCCESS;
+    }
+
+    private void upgradeWall(World world, ItemUsageContext context, Block clickedBlock, ServerPlayerEntity player) {
+        if (!world.isClient) {
+
+        }
+    }
+
+    private void upgradeFloor(World world, ItemUsageContext context, Block clickedBlock, ServerPlayerEntity player) {
         if (!world.isClient) {
             if (player != null) {
                 int[][] posAndAmount = new int[9][2];
@@ -72,7 +113,7 @@ public class HammerItem extends Item {
                     for (int i = -1; i < 2; i++) {
                         for (int j = -1; j < 2; j++) {
                             if (i != 0 || j != 0)
-                                world.setBlockState(context.getBlockPos().add(i, 0, j), HAMMER_CENTER_BLOCK.get(clickedBlock).getDefaultState());
+                                world.setBlockState(context.getBlockPos().add(i, 0, j), HAMMER_BLOCKS.get(clickedBlock).getDefaultState());
                         }
                     }
                     world.setBlockState(context.getBlockPos(), HAMMER_CENTER_BLOCK.get(clickedBlock).getDefaultState());
@@ -106,28 +147,6 @@ public class HammerItem extends Item {
     }
 
     private void removeWall(World world, ItemUsageContext context, ServerPlayerEntity player) {
-    }
 
-    @Override
-    public ActionResult useOnBlock(ItemUsageContext context) {
-        World world = context.getWorld();
-        Block clickedBlock = world.getBlockState(context.getBlockPos()).getBlock();
-        if (!world.isClient) {
-            ServerPlayerEntity player = ((ServerPlayerEntity) context.getPlayer());
-            if (player != null) {
-                if (player.isSneaking() &&
-                        clickedBlock.equals(ModBlocks.WOODEN_BUILDING_BLOCK_CENTER)) {
-                    if (context.getSide().equals(Direction.DOWN) || context.getSide().equals(Direction.UP))
-                        removeFloor(world, context, player);
-                    else
-                        removeWall(world, context, player);
-                } else if (HAMMER_CENTER_BLOCK.containsKey(clickedBlock)) {
-                    changeBlock(world, context, clickedBlock, player);
-                } else {
-                    player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 1, 1);
-                }
-            }
-        }
-        return ActionResult.SUCCESS;
     }
 }

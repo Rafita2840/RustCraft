@@ -6,7 +6,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
-import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -40,66 +39,71 @@ public class BlueprintFloorItem extends Item {
     }
 
 
-
     @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
         World world = context.getWorld();
         Block clickedBlock = world.getBlockState(context.getBlockPos()).getBlock();
-        Block[] corners = new Block[4];
-        Block[] cornersUp = new Block[4];
-        if (clickedBlock.equals(Blocks.SANDSTONE)) {
-            corners[0] = world.getBlockState(context.getBlockPos().add(1, 0, 1)).getBlock();
-            corners[1] = world.getBlockState(context.getBlockPos().add(-1, 0, -1)).getBlock();
-            corners[2] = world.getBlockState(context.getBlockPos().add(1, 0, -1)).getBlock();
-            corners[3] = world.getBlockState(context.getBlockPos().add(-1, 0, 1)).getBlock();
-            cornersUp[0] = world.getBlockState(context.getBlockPos().add(1, 1, 1)).getBlock();
-            cornersUp[1] = world.getBlockState(context.getBlockPos().add(-1, 1, -1)).getBlock();
-            cornersUp[2] = world.getBlockState(context.getBlockPos().add(1, 1, -1)).getBlock();
-            cornersUp[3] = world.getBlockState(context.getBlockPos().add(-1, 1, 1)).getBlock();
-            boolean same = false, otherSame = false;
-            int counter = 0;
-            int i = 0;
-            while (!same) {
-                if (corners[i].equals(clickedBlock))
-                    counter++;
-                i++;
-                if (counter == 4)
-                    same = true;
-                if (i == 4)
-                    break;
-            }
-            i = 0;
-            counter = 0;
-            while (!otherSame) {
-                if (cornersUp[i].equals(Blocks.AIR))
-                    counter++;
-                i++;
-                if (counter == 4)
-                    otherSame = true;
-                if (i == 4)
-                    break;
-            }
-            if (same && otherSame) {
-                changeBlock(world, context);
-            } else {
-                if (!world.isClient) {
-                    ServerPlayerEntity player = ((ServerPlayerEntity) context.getPlayer());
-                    if (player != null)
+        Block[] surroundings = new Block[8];
+        Block[] upSurroundings = new Block[9];
+        if (!world.isClient) {
+            ServerPlayerEntity player = ((ServerPlayerEntity) context.getPlayer());
+            if (player != null) {
+                if (clickedBlock.equals(Blocks.SANDSTONE)) {
+                    surroundings[0] = world.getBlockState(context.getBlockPos().add(1, 0, 1)).getBlock();
+                    surroundings[1] = world.getBlockState(context.getBlockPos().add(-1, 0, -1)).getBlock();
+                    surroundings[2] = world.getBlockState(context.getBlockPos().add(1, 0, -1)).getBlock();
+                    surroundings[3] = world.getBlockState(context.getBlockPos().add(-1, 0, 1)).getBlock();
+                    surroundings[4] = world.getBlockState(context.getBlockPos().add(0, 0, 1)).getBlock();
+                    surroundings[5] = world.getBlockState(context.getBlockPos().add(0, 0, -1)).getBlock();
+                    surroundings[6] = world.getBlockState(context.getBlockPos().add(-1, 0, 0)).getBlock();
+                    surroundings[7] = world.getBlockState(context.getBlockPos().add(1, 0, 0)).getBlock();
+                    upSurroundings[0] = world.getBlockState(context.getBlockPos().add(1, 1, 1)).getBlock();
+                    upSurroundings[1] = world.getBlockState(context.getBlockPos().add(-1, 1, -1)).getBlock();
+                    upSurroundings[2] = world.getBlockState(context.getBlockPos().add(1, 1, -1)).getBlock();
+                    upSurroundings[3] = world.getBlockState(context.getBlockPos().add(-1, 1, 1)).getBlock();
+                    upSurroundings[4] = world.getBlockState(context.getBlockPos().add(0, 1, 1)).getBlock();
+                    upSurroundings[5] = world.getBlockState(context.getBlockPos().add(0, 1, -1)).getBlock();
+                    upSurroundings[6] = world.getBlockState(context.getBlockPos().add(-1, 1, 0)).getBlock();
+                    upSurroundings[7] = world.getBlockState(context.getBlockPos().add(1, 1, 0)).getBlock();
+                    upSurroundings[8] = world.getBlockState(context.getBlockPos().add(0, 1, 0)).getBlock();
+                    boolean same = false, otherSame = false;
+                    int counter = 0;
+                    int i = 0;
+                    while (!same) {
+                        if (surroundings[i].equals(clickedBlock))
+                            counter++;
+                        i++;
+                        if (counter == 8)
+                            same = true;
+                        if (i == 8)
+                            break;
+                    }
+                    i = 0;
+                    counter = 0;
+                    while (!otherSame) {
+                        if (upSurroundings[i].equals(Blocks.AIR))
+                            counter++;
+                        i++;
+                        if (counter == 9)
+                            otherSame = true;
+                        if (i == 9)
+                            break;
+                    }
+                    if (same && otherSame) {
+                        placeFloor(world, context);
+                    } else {
                         player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 5, 1);
-                }
-            }
-        }
-        else {
-            if (!world.isClient) {
-                ServerPlayerEntity player = ((ServerPlayerEntity) context.getPlayer());
-                if (player != null)
+                    }
+                } else {
                     player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 5, 1);
+
+                }
             }
         }
         return ActionResult.SUCCESS;
     }
 
-    private void changeBlock(World world, ItemUsageContext context) {
+    private void placeFloor(World world, ItemUsageContext context) {
         if (!world.isClient) {
             ServerPlayerEntity player = ((ServerPlayerEntity) context.getPlayer());
             if (player != null) {
