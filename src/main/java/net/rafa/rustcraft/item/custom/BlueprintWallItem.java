@@ -9,6 +9,7 @@ import net.minecraft.item.ItemUsageContext;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
@@ -19,6 +20,9 @@ import net.rafa.rustcraft.block.ModBlocks;
 import net.rafa.rustcraft.item.ModItems;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 public class BlueprintWallItem extends Item {
 
@@ -28,24 +32,30 @@ public class BlueprintWallItem extends Item {
                     ModBlocks.STONE_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK_CENTER
             );
 
-    private static final Map<Block, Block> FLOOR_BLOCK_MAP =
-            Map.of(
-                    ModBlocks.WOODEN_BUILDING_BLOCK, ModBlocks.WOODEN_BUILDING_BLOCK,
-                    ModBlocks.STONE_BUILDING_BLOCK, ModBlocks.STONE_BUILDING_BLOCK
+    private static final Set<Block> BUILDING_BLOCKS =
+            Set.of(
+                    ModBlocks.WOODEN_BUILDING_BLOCK, ModBlocks.STONE_BUILDING_BLOCK
             );
     private static final Item RESOURCE_NEEDED = ModItems.WOOD;
 
     private boolean overFloor;
+    private boolean overWallLeft;
+    private boolean overWallRight;
     private final BlockPos[] wallPlace;
 
     public BlueprintWallItem(Settings settings) {
         super(settings);
         overFloor = false;
+        overWallLeft = false;
+        overWallRight = false;
         wallPlace = new BlockPos[12];
     }
 
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
+        overFloor = false;
+        overWallLeft = false;
+        overWallRight = false;
         if (!world.isClient){
             ServerPlayerEntity player = ((ServerPlayerEntity) user);
             if (player.isSneaking()){
@@ -60,6 +70,8 @@ public class BlueprintWallItem extends Item {
     @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
         overFloor = false;
+        overWallLeft = false;
+        overWallRight = false;
         World world = context.getWorld();
         Block clickedBlock = world.getBlockState(context.getBlockPos()).getBlock();
         if (!world.isClient) {
@@ -73,6 +85,7 @@ public class BlueprintWallItem extends Item {
                     }
                 } else {
                     player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 1, 1);
+                    player.sendMessage(Text.translatable("text.rustcraft.cant_use"), true);
                 }
             }
         }
@@ -94,7 +107,7 @@ public class BlueprintWallItem extends Item {
         wallPlace[1] = context.getBlockPos().add(xOffset, 1, zOffset);
         wallPlace[2] = context.getBlockPos().add(xOffset, 2, zOffset);
         wallPlace[3] = context.getBlockPos().add(xOffset, 3, zOffset);
-        if (zOffset == 0){
+        if (xOffset != 0){
             wallPlace[4] = context.getBlockPos().add(xOffset, 0, 1);
             wallPlace[5] = context.getBlockPos().add(xOffset, 1, 1);
             wallPlace[6] = context.getBlockPos().add(xOffset, 2, 1);
@@ -114,30 +127,119 @@ public class BlueprintWallItem extends Item {
             wallPlace[11] = context.getBlockPos().add(-1, 3, zOffset);
         }
         int counter = 0;
+        int floors = 0;
+        int side1 = 0;
+        int side2 = 0;
         int i = 0;
         while (!checks) {
             if (world.getBlockState(wallPlace[i]).getBlock().equals(Blocks.AIR))
                 counter++;
-            if (i == 0 || i == 4 || i == 8)
-                if (FLOOR_BLOCK_MAP.containsKey(world.getBlockState(wallPlace[i]).getBlock())) {
-                    overFloor = true;
+            else if (i == 0 || i == 4 || i == 8)
+                if (BUILDING_BLOCKS.contains(world.getBlockState(wallPlace[i]).getBlock())) {
+                    floors++;
+                    if (floors == 3)
+                        overFloor = true;
+                    counter++;
+                    if (i == 4)
+                        side1++;
+                    if (i == 8)
+                        side2++;
+                }
+            if (i == 5 || i == 6 || i == 7){
+                if (BUILDING_BLOCKS.contains(world.getBlockState(wallPlace[i]).getBlock())) {
+                    side1++;
+                    if (side1 == 4)
+                        overWallLeft = true;
                     counter++;
                 }
+            }
+            if (i == 9 || i == 10 || i == 11){
+                if (BUILDING_BLOCKS.contains(world.getBlockState(wallPlace[i]).getBlock())) {
+                    side2++;
+                    if (side2 == 4)
+                        overWallRight = true;
+                    counter++;
+                }
+            }
             i++;
-            if (counter == 11)
+            if (counter == 12)
                 checks = true;
-            if (i == 11)
+            if (i == 12)
                 break;
         }
         return checks;
     }
 
     private void placeWall(World world, ServerPlayerEntity player) {
-        int amount;
-        if (overFloor)
+        Map<Integer, Integer> placeOn = new TreeMap<>();
+        for (int i = 0; i < 12; i++){
+            placeOn.put(i, i);
+        }
+        int amount = 12;
+        if (overFloor && !(overWallLeft || overWallRight)) {
             amount = 9;
-        else
-            amount = 12;
+            placeOn.remove(0);
+            placeOn.remove(4);
+            placeOn.remove(8);
+        }
+        if (overWallRight && !overFloor) {
+            amount = 8;
+            placeOn.remove(8);
+            placeOn.remove(9);
+            placeOn.remove(10);
+            placeOn.remove(11);
+        }
+        if (overWallRight && overFloor) {
+            amount = 6;
+            placeOn.remove(0);
+            placeOn.remove(4);
+            placeOn.remove(8);
+            placeOn.remove(9);
+            placeOn.remove(10);
+            placeOn.remove(11);
+        }
+        if (overWallLeft && !overFloor) {
+            amount = 8;
+            placeOn.remove(4);
+            placeOn.remove(5);
+            placeOn.remove(6);
+            placeOn.remove(7);
+        }
+        if (overWallLeft && overFloor) {
+            amount = 6;
+            placeOn.remove(0);
+            placeOn.remove(4);
+            placeOn.remove(5);
+            placeOn.remove(6);
+            placeOn.remove(7);
+            placeOn.remove(8);
+        }
+        if (overWallRight && overWallLeft && overFloor) {
+            amount = 3;
+            placeOn.remove(0);
+            placeOn.remove(4);
+            placeOn.remove(5);
+            placeOn.remove(6);
+            placeOn.remove(7);
+            placeOn.remove(8);
+            placeOn.remove(9);
+            placeOn.remove(10);
+            placeOn.remove(11);
+        }
+        if (overWallRight && overWallLeft && !overFloor) {
+            amount = 4;
+            placeOn.remove(4);
+            placeOn.remove(5);
+            placeOn.remove(6);
+            placeOn.remove(7);
+            placeOn.remove(8);
+            placeOn.remove(9);
+            placeOn.remove(10);
+            placeOn.remove(11);
+            placeOn.remove(12);
+        }
+
+
         if (player != null) {
             int[][] posAndAmount = new int[12][2];
             int k = 0;
@@ -163,7 +265,7 @@ public class BlueprintWallItem extends Item {
                     player.getInventory().removeStack(posAndAmount[k][0], amount);
                 for (int i = 0; i < 12; i++) {
                     if (i != 2)
-                        if (!(overFloor && (i == 0 || i == 4 || i == 8)))
+                        if (placeOn.containsKey(i))
                             world.setBlockState(wallPlace[i], ModBlocks.WOODEN_BUILDING_BLOCK.getDefaultState());
                 }
                 world.setBlockState(wallPlace[2], ModBlocks.WOODEN_BUILDING_BLOCK_CENTER.getDefaultState());
@@ -183,7 +285,6 @@ public class BlueprintWallItem extends Item {
                     player.getInventory().insertStack(posAndAmount[k][0], RESOURCE_NEEDED.getDefaultStack());
 
             }
-            overFloor = false;
         }
     }
 }

@@ -21,5 +21,7 @@
 
 
   "group.rustcraft.rustcraft_items": "RustCraft Items",
-  "group.rustcraft.rustcraft_blocks": "RustCraft Blocks"
+  "group.rustcraft.rustcraft_blocks": "RustCraft Blocks",
+
+  "text.rustcraft.cant_use": "§cCan't use"
 }

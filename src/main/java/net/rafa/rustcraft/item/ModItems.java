@@ -20,10 +20,10 @@ public class ModItems {
     public static final Item STONE = registerItem("stone", new Item(new Item.Settings()));
     public static final Item WOOD = registerItem("wood", new Item(new Item.Settings()));
 
-    public static final Item HAMMER = registerItem("hammer", new HammerItem(new Item.Settings()));
-    public static final Item BLUEPRINT_FLOOR = registerItem("blueprint_floor", new BlueprintFloorItem(new Item.Settings()));
-    public static final Item BLUEPRINT_STAIRS = registerItem("blueprint_stairs", new BlueprintStairsItem(new Item.Settings()));
-    public static final Item BLUEPRINT_WALL = registerItem("blueprint_wall", new BlueprintWallItem(new Item.Settings()));
+    public static final Item HAMMER = registerItem("hammer", new HammerItem(new Item.Settings().maxCount(1)));
+    public static final Item BLUEPRINT_FLOOR = registerItem("blueprint_floor", new BlueprintFloorItem(new Item.Settings().maxCount(1)));
+    public static final Item BLUEPRINT_STAIRS = registerItem("blueprint_stairs", new BlueprintStairsItem(new Item.Settings().maxCount(1)));
+    public static final Item BLUEPRINT_WALL = registerItem("blueprint_wall", new BlueprintWallItem(new Item.Settings().maxCount(1)));
 
 
 
