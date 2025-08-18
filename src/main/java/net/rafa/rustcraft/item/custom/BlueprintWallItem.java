@@ -22,7 +22,6 @@ import net.rafa.rustcraft.item.ModItems;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 public class BlueprintWallItem extends Item {
 

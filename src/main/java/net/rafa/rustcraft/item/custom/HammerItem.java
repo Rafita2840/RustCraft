@@ -1,11 +1,12 @@
 package net.rafa.rustcraft.item.custom;
 
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
@@ -17,6 +18,7 @@ import net.minecraft.world.World;
 import net.rafa.rustcraft.block.ModBlocks;
 import net.rafa.rustcraft.item.ModItems;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,6 +27,12 @@ public class HammerItem extends Item {
     private static final Set<Block> CENTER_BUILDING_BLOCKS =
             Set.of(
                     ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK_CENTER
+            );
+
+    private static final Set<Block> BUILDING_BLOCKS =
+            Set.of(
+                    ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModBlocks.WOODEN_BUILDING_BLOCK,
+                    ModBlocks.STONE_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK
             );
 
 
@@ -61,6 +69,11 @@ public class HammerItem extends Item {
     }
 
     @Override
+    public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
+        super.appendTooltip(stack, context, tooltip, type);
+    }
+
+    @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
         World world = context.getWorld();
         Block clickedBlock = world.getBlockState(context.getBlockPos()).getBlock();
@@ -68,19 +81,22 @@ public class HammerItem extends Item {
         if (!world.isClient) {
             ServerPlayerEntity player = ((ServerPlayerEntity) context.getPlayer());
             if (player != null) {
-                if (player.isSneaking() &&
-                        clickedBlock.equals(ModBlocks.WOODEN_BUILDING_BLOCK_CENTER)) {
-                    if (side.equals(Direction.DOWN) || side.equals(Direction.UP))
-                        removeFloor(world, context, player); //por som e particulas
-                    else
-                        removeWall(world, context, clickedBlock, player, side);
+                if (player.isSneaking()) {
+                    if (clickedBlock.equals(ModBlocks.WOODEN_BUILDING_BLOCK_CENTER)) {
+                        if (side.equals(Direction.DOWN) || side.equals(Direction.UP))
+                            removeFloor(world, context, player);
+                        else
+                            removeWall(world, context, clickedBlock, player, side);
+                    } else {
+                        player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 1, 1);
+                        player.sendMessage(Text.translatable("text.rustcraft.cant_remove"), true);
+                    }
                 } else if (HAMMER_CENTER_BLOCK.containsKey(clickedBlock)) {
                     if (side.equals(Direction.EAST) || side.equals(Direction.WEST)
                             || side.equals(Direction.NORTH) || side.equals(Direction.SOUTH))
                         upgradeWall(world, context, clickedBlock, player);
                     else
                         upgradeFloor(world, context, clickedBlock, player);
-
                 } else {
                     player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 1, 1);
                     player.sendMessage(Text.translatable("text.rustcraft.cant_use"), true);
@@ -92,6 +108,7 @@ public class HammerItem extends Item {
 
     private void upgradeWall(World world, ItemUsageContext context, Block clickedBlock, ServerPlayerEntity player) {
         if (!world.isClient) {
+            int amount = 12;
             if (player != null) {
                 int[][] posAndAmount = new int[9][2];
                 int k = 0;
@@ -103,7 +120,7 @@ public class HammerItem extends Item {
                         break;
                     posAndAmount[k][1] = player.getInventory().getStack(posAndAmount[k][0]).getCount();
                     count += posAndAmount[k][1];
-                    if (count < 9) {
+                    if (count < amount) {
                         player.getInventory().removeStack(posAndAmount[k][0], posAndAmount[k][1]);
                         k++;
                     } else {
@@ -168,26 +185,40 @@ public class HammerItem extends Item {
     }
 
     private void removeFloor(World world, ItemUsageContext context, ServerPlayerEntity player) {
+        int removed = 0;
         for (int i = -1; i < 2; i++) {
             for (int j = -1; j < 2; j++) {
-                world.setBlockState(context.getBlockPos().add(i, 0, j), Blocks.AIR.getDefaultState());
-                world.addBlockBreakParticles(context.getBlockPos().add(i, 0, j), ModBlocks.WOODEN_BUILDING_BLOCK.getDefaultState());
+                if (world.getBlockState((context.getBlockPos().add(i, 0, j))).equals(ModBlocks.WOODEN_BUILDING_BLOCK_CENTER.getDefaultState())
+                        || world.getBlockState((context.getBlockPos().add(i, 0, j))).equals(ModBlocks.WOODEN_BUILDING_BLOCK.getDefaultState())) {
+                    world.setBlockState(context.getBlockPos().add(i, 0, j), Blocks.AIR.getDefaultState());
+                    world.addBlockBreakParticles(context.getBlockPos().add(i, 0, j), ModBlocks.WOODEN_BUILDING_BLOCK.getDefaultState());
+                    removed++;
+                }
             }
         }
-        for (int n = 0; n < 9; n++)
+        for (int n = 0; n < removed; n++)
             player.getInventory().offerOrDrop(ModItems.WOOD.getDefaultStack());
-        player.playSoundToPlayer(SoundEvents.BLOCK_LADDER_BREAK, SoundCategory.BLOCKS, 20, 1);
+        player.playSoundToPlayer(SoundEvents.BLOCK_LADDER_STEP, SoundCategory.BLOCKS, 20, 1);
     }
 
     private void removeWall(World world, ItemUsageContext context, Block clickedBlock, ServerPlayerEntity player, Direction side) {
         if (!world.isClient) {
+            int removed = 0;
             boolean keepFloor = isOverFloor(world, context, side);
+            boolean keepWallLeft = isOverWall(world, context, true, side);
+            boolean keepWallRight = isOverWall(world, context, false, side);
             if (side.equals(Direction.EAST) || side.equals(Direction.WEST)) {
                 for (int y = -2; y < 2; y++) {
                     for (int z = -1; z < 2; z++) {
                         if (!(keepFloor && y == -2)) {
-                            world.setBlockState(context.getBlockPos().add(0, y, z), Blocks.AIR.getDefaultState());
-                            world.addBlockBreakParticles(context.getBlockPos().add(0, y, z), ModBlocks.WOODEN_BUILDING_BLOCK.getDefaultState());
+                            if (!(keepWallLeft && z == 1) && !(keepWallRight && z == -1)) {
+                                if (world.getBlockState(context.getBlockPos().add(0, y, z)).equals(ModBlocks.WOODEN_BUILDING_BLOCK.getDefaultState())
+                                        || world.getBlockState(context.getBlockPos().add(0, y, z)).equals(ModBlocks.WOODEN_BUILDING_BLOCK_CENTER.getDefaultState())) {
+                                    world.setBlockState(context.getBlockPos().add(0, y, z), Blocks.AIR.getDefaultState());
+                                    world.addBlockBreakParticles(context.getBlockPos().add(0, y, z), ModBlocks.WOODEN_BUILDING_BLOCK.getDefaultState());
+                                    removed++;
+                                }
+                            }
                         }
                     }
                 }
@@ -195,22 +226,44 @@ public class HammerItem extends Item {
                 for (int y = -2; y < 2; y++) {
                     for (int x = -1; x < 2; x++) {
                         if (!(keepFloor && y == -2)) {
-                            world.setBlockState(context.getBlockPos().add(x, y, 0), Blocks.AIR.getDefaultState());
-                            world.addBlockBreakParticles(context.getBlockPos().add(x, y, 0), ModBlocks.WOODEN_BUILDING_BLOCK.getDefaultState());
+                            if (!(keepWallLeft && x == -1) && !(keepWallRight && x == 1)) {
+                                if (world.getBlockState(context.getBlockPos().add(x, y, 0)).equals(ModBlocks.WOODEN_BUILDING_BLOCK.getDefaultState())
+                                        || world.getBlockState(context.getBlockPos().add(x, y, 0)).equals(ModBlocks.WOODEN_BUILDING_BLOCK_CENTER.getDefaultState())) {
+                                    world.setBlockState(context.getBlockPos().add(x, y, 0), Blocks.AIR.getDefaultState());
+                                    world.addBlockBreakParticles(context.getBlockPos().add(x, y, 0), ModBlocks.WOODEN_BUILDING_BLOCK.getDefaultState());
+                                    removed++;
+                                }
+                            }
                         }
                     }
                 }
             }
-            if (keepFloor) {
-                for (int n = 0; n < 9; n++)
-                    player.getInventory().offerOrDrop(ModItems.WOOD.getDefaultStack());
-            } else {
-                for (int n = 0; n < 12; n++)
-                    player.getInventory().offerOrDrop(ModItems.WOOD.getDefaultStack());
-            }
-
-            player.playSoundToPlayer(SoundEvents.BLOCK_LADDER_BREAK, SoundCategory.BLOCKS, 20, 1);
+            for (int i = 0; i < removed; i++)
+                player.getInventory().offerOrDrop(ModItems.WOOD.getDefaultStack());
+            player.playSoundToPlayer(SoundEvents.BLOCK_LADDER_STEP, SoundCategory.BLOCKS, 20, 1);
         }
+    }
+
+    private boolean isOverWall(World world, ItemUsageContext context, boolean side, Direction direction) {
+        if (!world.isClient) {
+            boolean dir = direction.equals(Direction.NORTH) || direction.equals(Direction.SOUTH);
+            if (side) {
+                if (dir) {
+                    return CENTER_BUILDING_BLOCKS.contains(world.getBlockState(context.getBlockPos().add(-1, 0, -1)).getBlock())
+                            || CENTER_BUILDING_BLOCKS.contains(world.getBlockState(context.getBlockPos().add(-1, 0, 1)).getBlock());
+                } else
+                    return CENTER_BUILDING_BLOCKS.contains(world.getBlockState(context.getBlockPos().add(1, 0, 1)).getBlock())
+                            || CENTER_BUILDING_BLOCKS.contains(world.getBlockState(context.getBlockPos().add(-1, 0, 1)).getBlock());
+            } else {
+                if (dir) {
+                    return CENTER_BUILDING_BLOCKS.contains(world.getBlockState(context.getBlockPos().add(1, 0, -1)).getBlock())
+                            || CENTER_BUILDING_BLOCKS.contains(world.getBlockState(context.getBlockPos().add(1, 0, 1)).getBlock());
+                } else
+                    return CENTER_BUILDING_BLOCKS.contains(world.getBlockState(context.getBlockPos().add(1, 0, -1)).getBlock())
+                            || CENTER_BUILDING_BLOCKS.contains(world.getBlockState(context.getBlockPos().add(-1, 0, -1)).getBlock());
+            }
+        }
+        return false;
     }
 
     private boolean isOverFloor(World world, ItemUsageContext context, Direction side) {
