@@ -17,10 +17,22 @@ import net.minecraft.world.World;
 import net.rafa.rustcraft.block.ModBlocks;
 import net.rafa.rustcraft.item.ModItems;
 
+import java.util.Set;
+
 public class BlueprintFloorItem extends Item {
 
     private static final Item RESOURCE_NEEDED = ModItems.WOOD;
 
+    private static final Set<Block> CENTER_BUILDING_BLOCKS =
+            Set.of(
+                    ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK_CENTER
+            );
+
+    private static final Set<Block> BUILDING_BLOCKS =
+            Set.of(
+                    ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModBlocks.WOODEN_BUILDING_BLOCK,
+                    ModBlocks.STONE_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK
+            );
 
     public BlueprintFloorItem(Settings settings) {
         super(settings);
@@ -46,6 +58,7 @@ public class BlueprintFloorItem extends Item {
         Block clickedBlock = world.getBlockState(context.getBlockPos()).getBlock();
         Block[] surroundings = new Block[8];
         Block[] upSurroundings = new Block[9];
+        Block[] centralBlocksGrid = new Block[8];
         if (!world.isClient) {
             ServerPlayerEntity player = ((ServerPlayerEntity) context.getPlayer());
             if (player != null) {
@@ -67,6 +80,14 @@ public class BlueprintFloorItem extends Item {
                     upSurroundings[6] = world.getBlockState(context.getBlockPos().add(-1, 1, 0)).getBlock();
                     upSurroundings[7] = world.getBlockState(context.getBlockPos().add(1, 1, 0)).getBlock();
                     upSurroundings[8] = world.getBlockState(context.getBlockPos().add(0, 1, 0)).getBlock();
+                    centralBlocksGrid[0] = world.getBlockState(context.getBlockPos().add(3, 1, 3)).getBlock();
+                    centralBlocksGrid[1] = world.getBlockState(context.getBlockPos().add(-3, 1, 3)).getBlock();
+                    centralBlocksGrid[2] = world.getBlockState(context.getBlockPos().add(-3, 1, -3)).getBlock();
+                    centralBlocksGrid[3] = world.getBlockState(context.getBlockPos().add(3, 1, -6)).getBlock();
+                    centralBlocksGrid[4] = world.getBlockState(context.getBlockPos().add(6, 1, 6)).getBlock();
+                    centralBlocksGrid[5] = world.getBlockState(context.getBlockPos().add(-6, 1, 6)).getBlock();
+                    centralBlocksGrid[6] = world.getBlockState(context.getBlockPos().add(-6, 1, -6)).getBlock();
+                    centralBlocksGrid[7] = world.getBlockState(context.getBlockPos().add(6, 1, -6)).getBlock();
                     boolean same = false, otherSame = false;
                     int counter = 0;
                     int i = 0;
@@ -82,29 +103,39 @@ public class BlueprintFloorItem extends Item {
                     i = 0;
                     counter = 0;
                     while (!otherSame) {
-                        if (upSurroundings[i].equals(Blocks.AIR))
+                        if (centralBlocksGrid[i].equals(Blocks.AIR) || CENTER_BUILDING_BLOCKS.contains(centralBlocksGrid[i]))
                             counter++;
                         i++;
-                        if (counter == 9)
+                        if (counter == 8)
                             otherSame = true;
-                        if (i == 9)
+                        if (i == 8)
                             break;
                     }
+                    int amount = 9;
+                    for (int n = 0; n < upSurroundings.length; n++){
+                        if (BUILDING_BLOCKS.contains(upSurroundings[n]))
+                            amount--;
+                    }
                     if (same && otherSame) {
-                        placeFloor(world, context);
+                        placeFloor(world, context, amount);
+                    } else if (!otherSame){
+                        player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 5, 1);
+                        player.sendMessage(Text.translatable("text.rustcraft.off_grid"), true);
                     } else {
                         player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 5, 1);
+                        player.sendMessage(Text.translatable("text.rustcraft.non_buildable_surface"), true);
                     }
+
                 } else {
                     player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 5, 1);
-                    player.sendMessage(Text.translatable("text.rustcraft.cant_use"), true);
+                    player.sendMessage(Text.translatable("text.rustcraft.non_buildable_surface"), true);
                 }
             }
         }
         return ActionResult.SUCCESS;
     }
 
-    private void placeFloor(World world, ItemUsageContext context) {
+    private void placeFloor(World world, ItemUsageContext context, int amount) {
         if (!world.isClient) {
             ServerPlayerEntity player = ((ServerPlayerEntity) context.getPlayer());
             if (player != null) {
@@ -118,7 +149,7 @@ public class BlueprintFloorItem extends Item {
                         break;
                     posAndAmount[k][1] = player.getInventory().getStack(posAndAmount[k][0]).getCount();
                     count += posAndAmount[k][1];
-                    if (count < 9) {
+                    if (count < amount) {
                         player.getInventory().removeStack(posAndAmount[k][0], posAndAmount[k][1]);
                         k++;
                     } else {
@@ -129,11 +160,12 @@ public class BlueprintFloorItem extends Item {
                 }
                 if (success || k == 8) {
                     if (k==0)
-                        player.getInventory().removeStack(posAndAmount[k][0], 9);
+                        player.getInventory().removeStack(posAndAmount[k][0], amount);
                     for (int i = -1; i < 2; i++) {
                         for (int j = -1; j < 2; j++) {
                             if (i != 0 || j != 0)
-                                world.setBlockState(context.getBlockPos().add(i, 1, j), ModBlocks.WOODEN_BUILDING_BLOCK.getDefaultState());
+                                if (world.getBlockState(context.getBlockPos().add(i,1,j)).equals(Blocks.AIR.getDefaultState()))
+                                    world.setBlockState(context.getBlockPos().add(i, 1, j), ModBlocks.WOODEN_BUILDING_BLOCK.getDefaultState());
                         }
                     }
                     world.setBlockState(context.getBlockPos().add(0, 1, 0), ModBlocks.WOODEN_BUILDING_BLOCK_CENTER.getDefaultState());
@@ -148,7 +180,7 @@ public class BlueprintFloorItem extends Item {
                     }
                 }
                 if (k > 0 && success){
-                    for (int p = 0; p < count - 9; p++)
+                    for (int p = 0; p < count - amount; p++)
                         player.getInventory().insertStack(posAndAmount[k][0], RESOURCE_NEEDED.getDefaultStack());
 
                 }

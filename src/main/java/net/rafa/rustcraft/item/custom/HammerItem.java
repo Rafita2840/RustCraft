@@ -186,12 +186,23 @@ public class HammerItem extends Item {
 
     private void removeFloor(World world, ItemUsageContext context, ServerPlayerEntity player) {
         int removed = 0;
-        for (int i = -1; i < 2; i++) {
-            for (int j = -1; j < 2; j++) {
+        int initI = -1;
+        int initJ = -1;
+        int endI = 2;
+        int endJ = 2;
+        if (CENTER_BUILDING_BLOCKS.contains(world.getBlockState((context.getBlockPos().add(-1, 2, 0))).getBlock()))
+            initI = 0;
+        if (CENTER_BUILDING_BLOCKS.contains(world.getBlockState((context.getBlockPos().add(0, 2, -1))).getBlock()))
+            initJ = 0;
+        if (CENTER_BUILDING_BLOCKS.contains(world.getBlockState((context.getBlockPos().add(1, 2, 0))).getBlock()))
+            endI = 1;
+        if (CENTER_BUILDING_BLOCKS.contains(world.getBlockState((context.getBlockPos().add(0, 2, 1))).getBlock()))
+            endJ = 1;
+        for (int i = initI; i < endI; i++) {
+            for (int j = initJ; j < endJ; j++) {
                 if (world.getBlockState((context.getBlockPos().add(i, 0, j))).equals(ModBlocks.WOODEN_BUILDING_BLOCK_CENTER.getDefaultState())
                         || world.getBlockState((context.getBlockPos().add(i, 0, j))).equals(ModBlocks.WOODEN_BUILDING_BLOCK.getDefaultState())) {
                     world.setBlockState(context.getBlockPos().add(i, 0, j), Blocks.AIR.getDefaultState());
-                    world.addBlockBreakParticles(context.getBlockPos().add(i, 0, j), ModBlocks.WOODEN_BUILDING_BLOCK.getDefaultState());
                     removed++;
                 }
             }
