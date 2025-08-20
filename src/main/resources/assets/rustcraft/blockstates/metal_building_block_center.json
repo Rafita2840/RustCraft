@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "rustcraft:block/metal_building_block_center"
+    }
+  }
+}

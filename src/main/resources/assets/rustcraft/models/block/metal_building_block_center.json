@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "up": "rustcraft:block/metal_building_block_center_top",
+    "down": "rustcraft:block/metal_building_block_center_top",
+    "east": "rustcraft:block/metal_building_block_center_side",
+    "north": "rustcraft:block/metal_building_block_center_side",
+    "west": "rustcraft:block/metal_building_block_center_side",
+    "south": "rustcraft:block/metal_building_block_center_side",
+    "particle" : "rustcraft:block/metal_building_block_side"
+  }
+}

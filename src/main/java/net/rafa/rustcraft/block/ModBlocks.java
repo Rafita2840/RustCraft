@@ -45,6 +45,18 @@ public class ModBlocks {
                     .requiresTool()
     ));
 
+    public static final Block METAL_BUILDING_BLOCK = registerBlock("metal_building_block", new Block(
+            AbstractBlock.Settings.create()
+                    .strength(-1)
+                    .requiresTool()
+    ));
+
+    public static final Block METAL_BUILDING_BLOCK_CENTER = registerBlock("metal_building_block_center", new Block(
+            AbstractBlock.Settings.create()
+                    .strength(-1)
+                    .requiresTool()
+    ));
+
     private static Block registerBlock(String name, Block block) {
         registerBlockItem(name, block);
         return Registry.register(Registries.BLOCK, Identifier.of(RustCraft.MOD_ID, name), block);

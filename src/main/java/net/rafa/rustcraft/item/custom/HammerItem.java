@@ -26,42 +26,44 @@ public class HammerItem extends Item {
 
     private static final Set<Block> CENTER_BUILDING_BLOCKS =
             Set.of(
-                    ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK_CENTER
+                    ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK_CENTER,
+                    ModBlocks.METAL_BUILDING_BLOCK_CENTER
             );
 
     private static final Set<Block> BUILDING_BLOCKS =
             Set.of(
                     ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModBlocks.WOODEN_BUILDING_BLOCK,
-                    ModBlocks.STONE_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK
+                    ModBlocks.STONE_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK,
+                    ModBlocks.METAL_BUILDING_BLOCK_CENTER, ModBlocks.METAL_BUILDING_BLOCK
             );
 
 
     private static final Map<Block, Block> HAMMER_BLOCKS =
             Map.of(
                     ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK,
-                    ModBlocks.STONE_BUILDING_BLOCK_CENTER, Blocks.IRON_BLOCK,
-                    Blocks.IRON_BLOCK, Blocks.NETHERITE_BLOCK
+                    ModBlocks.STONE_BUILDING_BLOCK_CENTER, ModBlocks.METAL_BUILDING_BLOCK,
+                    ModBlocks.METAL_BUILDING_BLOCK_CENTER, Blocks.NETHERITE_BLOCK
             );
 
     private static final Map<Block, Block> HAMMER_CENTER_BLOCK =
             Map.of(
                     ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK_CENTER,
-                    ModBlocks.STONE_BUILDING_BLOCK_CENTER, Blocks.IRON_BLOCK,
-                    Blocks.IRON_BLOCK, Blocks.NETHERITE_BLOCK
+                    ModBlocks.STONE_BUILDING_BLOCK_CENTER, ModBlocks.METAL_BUILDING_BLOCK_CENTER,
+                    ModBlocks.METAL_BUILDING_BLOCK_CENTER, Blocks.NETHERITE_BLOCK
             );
 
     private static final Map<Block, Item> HAMMER_ITEM_MAP =
             Map.of(
                     ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModItems.STONE,
-                    ModBlocks.STONE_BUILDING_BLOCK_CENTER, Items.IRON_INGOT,
-                    Blocks.IRON_BLOCK, Items.NETHERITE_INGOT
+                    ModBlocks.STONE_BUILDING_BLOCK_CENTER, ModItems.METAL,
+                    ModBlocks.METAL_BUILDING_BLOCK_CENTER, Items.NETHERITE_INGOT
             );
 
     private static final Map<Block, SoundEvent> HAMMER_SOUND_MAP =
             Map.of(
                     ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, SoundEvents.ENTITY_IRON_GOLEM_REPAIR,
                     ModBlocks.STONE_BUILDING_BLOCK_CENTER, SoundEvents.BLOCK_SMITHING_TABLE_USE,
-                    Blocks.IRON_BLOCK, SoundEvents.BLOCK_ANVIL_USE
+                    ModBlocks.METAL_BUILDING_BLOCK_CENTER, SoundEvents.BLOCK_ANVIL_USE
             );
 
     public HammerItem(Settings settings) {

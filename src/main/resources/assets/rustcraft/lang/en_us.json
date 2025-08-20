@@ -6,6 +6,7 @@
   "item.rustcraft.animal_fat": "Animal Fat",
   "item.rustcraft.stone": "Stone",
   "item.rustcraft.wood": "Wood",
+  "item.rustcraft.metal": "Metal",
 
   "item.rustcraft.hammer": "Hammer",
   "item.rustcraft.blueprint_floor": "Blueprint (Floor)",
@@ -18,6 +19,8 @@
   "block.rustcraft.wooden_building_block": "Wooden Building Block",
   "block.rustcraft.stone_building_block_center": "Center Stone Building Block",
   "block.rustcraft.stone_building_block": "Stone Building Block",
+  "block.rustcraft.metal_building_block_center": "Center Metal Building Block",
+  "block.rustcraft.metal_building_block": "Metal Building Block",
 
 
   "group.rustcraft.rustcraft_items": "RustCraft Items",
