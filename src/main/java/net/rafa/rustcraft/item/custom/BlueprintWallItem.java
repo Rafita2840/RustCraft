@@ -28,12 +28,15 @@ public class BlueprintWallItem extends Item {
     private static final Map<Block, Block> CENTER_BLOCK_MAP =
             Map.of(
                     ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModBlocks.WOODEN_BUILDING_BLOCK_CENTER,
-                    ModBlocks.STONE_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK_CENTER
+                    ModBlocks.STONE_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK_CENTER,
+                    ModBlocks.METAL_BUILDING_BLOCK_CENTER, ModBlocks.METAL_BUILDING_BLOCK_CENTER,
+                    ModBlocks.HIGH_QUALITY_METAL_BUILDING_BLOCK_CENTER, ModBlocks.HIGH_QUALITY_METAL_BUILDING_BLOCK_CENTER
             );
 
     private static final Set<Block> BUILDING_BLOCKS =
             Set.of(
-                    ModBlocks.WOODEN_BUILDING_BLOCK, ModBlocks.STONE_BUILDING_BLOCK
+                    ModBlocks.WOODEN_BUILDING_BLOCK, ModBlocks.STONE_BUILDING_BLOCK,
+                    ModBlocks.METAL_BUILDING_BLOCK, ModBlocks.HIGH_QUALITY_METAL_BUILDING_BLOCK
             );
     private static final Item RESOURCE_NEEDED = ModItems.WOOD;
 
@@ -240,7 +243,7 @@ public class BlueprintWallItem extends Item {
 
 
         if (player != null) {
-            int[][] posAndAmount = new int[12][2];
+            int[][] posAndAmount = new int[amount][2];
             int k = 0;
             int count = 0;
             boolean success = false;

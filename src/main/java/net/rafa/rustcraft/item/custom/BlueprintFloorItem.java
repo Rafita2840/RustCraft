@@ -25,13 +25,16 @@ public class BlueprintFloorItem extends Item {
 
     private static final Set<Block> CENTER_BUILDING_BLOCKS =
             Set.of(
-                    ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK_CENTER
+                    ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK_CENTER,
+                    ModBlocks.METAL_BUILDING_BLOCK_CENTER, ModBlocks.HIGH_QUALITY_METAL_BUILDING_BLOCK_CENTER
             );
 
     private static final Set<Block> BUILDING_BLOCKS =
             Set.of(
                     ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModBlocks.WOODEN_BUILDING_BLOCK,
-                    ModBlocks.STONE_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK
+                    ModBlocks.STONE_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK,
+                    ModBlocks.METAL_BUILDING_BLOCK_CENTER, ModBlocks.METAL_BUILDING_BLOCK,
+                    ModBlocks.HIGH_QUALITY_METAL_BUILDING_BLOCK_CENTER, ModBlocks.HIGH_QUALITY_METAL_BUILDING_BLOCK
             );
 
     public BlueprintFloorItem(Settings settings) {
@@ -112,8 +115,8 @@ public class BlueprintFloorItem extends Item {
                             break;
                     }
                     int amount = 9;
-                    for (int n = 0; n < upSurroundings.length; n++){
-                        if (BUILDING_BLOCKS.contains(upSurroundings[n]))
+                    for (Block upSurrounding : upSurroundings) {
+                        if (BUILDING_BLOCKS.contains(upSurrounding))
                             amount--;
                     }
                     if (same && otherSame) {

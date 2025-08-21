@@ -27,36 +27,44 @@ public class HammerItem extends Item {
     private static final Set<Block> CENTER_BUILDING_BLOCKS =
             Set.of(
                     ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK_CENTER,
-                    ModBlocks.METAL_BUILDING_BLOCK_CENTER
+                    ModBlocks.METAL_BUILDING_BLOCK_CENTER, ModBlocks.HIGH_QUALITY_METAL_BUILDING_BLOCK_CENTER
             );
 
     private static final Set<Block> BUILDING_BLOCKS =
             Set.of(
                     ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModBlocks.WOODEN_BUILDING_BLOCK,
                     ModBlocks.STONE_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK,
-                    ModBlocks.METAL_BUILDING_BLOCK_CENTER, ModBlocks.METAL_BUILDING_BLOCK
+                    ModBlocks.METAL_BUILDING_BLOCK_CENTER, ModBlocks.METAL_BUILDING_BLOCK,
+                    ModBlocks.HIGH_QUALITY_METAL_BUILDING_BLOCK_CENTER, ModBlocks.HIGH_QUALITY_METAL_BUILDING_BLOCK
             );
 
+    private static final Map<Block, Block> HAMMER_BLOCKS_CENTER_TO_OTHER =
+            Map.of(
+                    ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModBlocks.WOODEN_BUILDING_BLOCK,
+                    ModBlocks.STONE_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK,
+                    ModBlocks.METAL_BUILDING_BLOCK_CENTER, ModBlocks.METAL_BUILDING_BLOCK,
+                    ModBlocks.HIGH_QUALITY_METAL_BUILDING_BLOCK_CENTER, ModBlocks.HIGH_QUALITY_METAL_BUILDING_BLOCK
+            );
 
     private static final Map<Block, Block> HAMMER_BLOCKS =
             Map.of(
                     ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK,
                     ModBlocks.STONE_BUILDING_BLOCK_CENTER, ModBlocks.METAL_BUILDING_BLOCK,
-                    ModBlocks.METAL_BUILDING_BLOCK_CENTER, Blocks.NETHERITE_BLOCK
+                    ModBlocks.METAL_BUILDING_BLOCK_CENTER, ModBlocks.HIGH_QUALITY_METAL_BUILDING_BLOCK
             );
 
     private static final Map<Block, Block> HAMMER_CENTER_BLOCK =
             Map.of(
                     ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK_CENTER,
                     ModBlocks.STONE_BUILDING_BLOCK_CENTER, ModBlocks.METAL_BUILDING_BLOCK_CENTER,
-                    ModBlocks.METAL_BUILDING_BLOCK_CENTER, Blocks.NETHERITE_BLOCK
+                    ModBlocks.METAL_BUILDING_BLOCK_CENTER, ModBlocks.HIGH_QUALITY_METAL_BUILDING_BLOCK_CENTER
             );
 
     private static final Map<Block, Item> HAMMER_ITEM_MAP =
             Map.of(
                     ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModItems.STONE,
                     ModBlocks.STONE_BUILDING_BLOCK_CENTER, ModItems.METAL,
-                    ModBlocks.METAL_BUILDING_BLOCK_CENTER, Items.NETHERITE_INGOT
+                    ModBlocks.METAL_BUILDING_BLOCK_CENTER, ModItems.HIGH_QUALITY_METAL
             );
 
     private static final Map<Block, SoundEvent> HAMMER_SOUND_MAP =
@@ -137,18 +145,25 @@ public class HammerItem extends Item {
 
     private void upgradeFloor(World world, ItemUsageContext context, Block clickedBlock, ServerPlayerEntity player) {
         if (!world.isClient) {
+            int amount = 1;
+            for (int i = -1; i < 2; i++){
+                for (int j = -1; j < 2; j++){
+                    if (world.getBlockState(context.getBlockPos().add(i,0,j)).equals(HAMMER_BLOCKS_CENTER_TO_OTHER.get(clickedBlock).getDefaultState()))
+                        amount++;
+                }
+            }
             if (player != null) {
-                int[][] posAndAmount = new int[9][2];
+                int[][] posAndAmount = new int[amount][2];
                 int k = 0;
                 int count = 0;
                 boolean success = false;
-                while (!success && k < 9) {
+                while (!success && k < amount) {
                     posAndAmount[k][0] = player.getInventory().getSlotWithStack(HAMMER_ITEM_MAP.get(clickedBlock).getDefaultStack());
                     if (posAndAmount[k][0] == -1)
                         break;
                     posAndAmount[k][1] = player.getInventory().getStack(posAndAmount[k][0]).getCount();
                     count += posAndAmount[k][1];
-                    if (count < 9) {
+                    if (count < amount) {
                         player.getInventory().removeStack(posAndAmount[k][0], posAndAmount[k][1]);
                         k++;
                     } else {
@@ -159,11 +174,12 @@ public class HammerItem extends Item {
                 }
                 if (success || k == 8) {
                     if (k==0)
-                        player.getInventory().removeStack(posAndAmount[k][0], 9);
+                        player.getInventory().removeStack(posAndAmount[k][0], amount);
                     for (int i = -1; i < 2; i++) {
                         for (int j = -1; j < 2; j++) {
                             if (i != 0 || j != 0)
-                                world.setBlockState(context.getBlockPos().add(i, 0, j), HAMMER_BLOCKS.get(clickedBlock).getDefaultState());
+                                if (world.getBlockState(context.getBlockPos().add(i,0,j)).equals(HAMMER_BLOCKS_CENTER_TO_OTHER.get(clickedBlock).getDefaultState()))
+                                    world.setBlockState(context.getBlockPos().add(i, 0, j), HAMMER_BLOCKS.get(clickedBlock).getDefaultState());
                         }
                     }
                     world.setBlockState(context.getBlockPos(), HAMMER_CENTER_BLOCK.get(clickedBlock).getDefaultState());
@@ -178,7 +194,7 @@ public class HammerItem extends Item {
                     }
                 }
                 if (k > 0 && success){
-                    for (int p = 0; p < count - 9; p++)
+                    for (int p = 0; p < count - amount; p++)
                         player.getInventory().insertStack(posAndAmount[k][0], HAMMER_ITEM_MAP.get(clickedBlock).getDefaultStack());
 
                 }

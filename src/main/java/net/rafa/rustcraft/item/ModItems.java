@@ -20,6 +20,7 @@ public class ModItems {
     public static final Item STONE = registerItem("stone", new Item(new Item.Settings()));
     public static final Item WOOD = registerItem("wood", new Item(new Item.Settings()));
     public static final Item METAL = registerItem("metal", new Item(new Item.Settings()));
+    public static final Item HIGH_QUALITY_METAL = registerItem("high_quality_metal", new Item(new Item.Settings()));
 
     public static final Item HAMMER = registerItem("hammer", new HammerItem(new Item.Settings().maxCount(1)));
     public static final Item BLUEPRINT_FLOOR = registerItem("blueprint_floor", new BlueprintFloorItem(new Item.Settings().maxCount(1)));

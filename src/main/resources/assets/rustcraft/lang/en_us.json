@@ -7,6 +7,7 @@
   "item.rustcraft.stone": "Stone",
   "item.rustcraft.wood": "Wood",
   "item.rustcraft.metal": "Metal",
+  "item.rustcraft.high_quality_metal": "High Quality Metal",
 
   "item.rustcraft.hammer": "Hammer",
   "item.rustcraft.blueprint_floor": "Blueprint (Floor)",
@@ -21,6 +22,8 @@
   "block.rustcraft.stone_building_block": "Stone Building Block",
   "block.rustcraft.metal_building_block_center": "Center Metal Building Block",
   "block.rustcraft.metal_building_block": "Metal Building Block",
+  "block.rustcraft.high_quality_metal_building_block_center": "Center High Quality Metal Building Block",
+  "block.rustcraft.high_quality_metal_building_block": "High Quality Metal Building Block",
 
 
   "group.rustcraft.rustcraft_items": "RustCraft Items",

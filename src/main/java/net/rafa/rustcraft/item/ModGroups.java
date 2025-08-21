@@ -27,6 +27,7 @@ public class ModGroups {
                         entries.add(ModItems.WOOD);
                         entries.add(ModItems.STONE);
                         entries.add(ModItems.METAL);
+                        entries.add(ModItems.HIGH_QUALITY_METAL);
                     }).build());
 
     public static final ItemGroup RUSTCRAFT_BLOCKS_GROUP = Registry.register(Registries.ITEM_GROUP,
@@ -41,6 +42,8 @@ public class ModGroups {
                         entries.add(ModBlocks.STONE_BUILDING_BLOCK_CENTER);
                         entries.add(ModBlocks.METAL_BUILDING_BLOCK);
                         entries.add(ModBlocks.METAL_BUILDING_BLOCK_CENTER);
+                        entries.add(ModBlocks.HIGH_QUALITY_METAL_BUILDING_BLOCK);
+                        entries.add(ModBlocks.HIGH_QUALITY_METAL_BUILDING_BLOCK_CENTER);
                     }).build());
 
     public static void registerModItemGroups(){
