@@ -32,5 +32,6 @@
   "text.rustcraft.cant_use": "§cCan't use!",
   "text.rustcraft.cant_remove": "§cCan't remove building!",
   "text.rustcraft.non_buildable_surface": "§cNon buildable surface!",
-  "text.rustcraft.off_grid": "§cOff grid!"
+  "text.rustcraft.off_grid": "§cOff grid!",
+  "text.rustcraft.not_enough_resources": "§cNot enough resources!"
 }

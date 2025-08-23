@@ -262,7 +262,7 @@ public class BlueprintWallItem extends Item {
                     success = true;
                 }
             }
-            if (success || k == 8) {
+            if (success || k == amount - 1) {
                 if (k == 0)
                     player.getInventory().removeStack(posAndAmount[k][0], amount);
                 for (int i = 0; i < 12; i++) {
@@ -275,6 +275,7 @@ public class BlueprintWallItem extends Item {
             }
             else  {
                 player.playSoundToPlayer(SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundCategory.BLOCKS, 20, 1);
+                player.sendMessage(Text.translatable("text.rustcraft.not_enough_resources"), true);
             }
             if (k > 0 && !success){
                 for (int n = 0; n < k; n++){
@@ -282,7 +283,7 @@ public class BlueprintWallItem extends Item {
                         player.getInventory().insertStack(posAndAmount[n][0], RESOURCE_NEEDED.getDefaultStack());
                 }
             }
-            if (k > 0 && success){
+            if (k > 0 && success && k < amount - 1){
                 for (int p = 0; p < count - amount; p++)
                     player.getInventory().insertStack(posAndAmount[k][0], RESOURCE_NEEDED.getDefaultStack());
 
