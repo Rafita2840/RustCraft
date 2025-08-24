@@ -11,6 +11,7 @@ import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.intprovider.UniformIntProvider;
 import net.rafa.rustcraft.RustCraft;
+import net.rafa.rustcraft.block.custom.ResourceVendingMachineBlock;
 
 public class ModBlocks {
 
@@ -67,6 +68,13 @@ public class ModBlocks {
             AbstractBlock.Settings.create()
                     .strength(-1)
                     .requiresTool()
+    ));
+
+    public static final Block RESOURCE_VENDING_MACHINE_BLOCK = registerBlock("resource_vending_machine_block", new ResourceVendingMachineBlock(
+            AbstractBlock.Settings.create()
+                    .strength(-1)
+                    .requiresTool()
+                    .nonOpaque()
     ));
 
     private static Block registerBlock(String name, Block block) {

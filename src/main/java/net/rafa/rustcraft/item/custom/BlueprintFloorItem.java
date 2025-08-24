@@ -59,21 +59,21 @@ public class BlueprintFloorItem extends Item {
     public ActionResult useOnBlock(ItemUsageContext context) {
         World world = context.getWorld();
         Block clickedBlock = world.getBlockState(context.getBlockPos()).getBlock();
-        Block[] surroundings = new Block[8];
+        Block[] surface = new Block[8];
         Block[] upSurroundings = new Block[9];
         Block[] centralBlocksGrid = new Block[8];
         if (!world.isClient) {
             ServerPlayerEntity player = ((ServerPlayerEntity) context.getPlayer());
             if (player != null) {
                 if (clickedBlock.equals(Blocks.SANDSTONE)) {
-                    surroundings[0] = world.getBlockState(context.getBlockPos().add(1, 0, 1)).getBlock();
-                    surroundings[1] = world.getBlockState(context.getBlockPos().add(-1, 0, -1)).getBlock();
-                    surroundings[2] = world.getBlockState(context.getBlockPos().add(1, 0, -1)).getBlock();
-                    surroundings[3] = world.getBlockState(context.getBlockPos().add(-1, 0, 1)).getBlock();
-                    surroundings[4] = world.getBlockState(context.getBlockPos().add(0, 0, 1)).getBlock();
-                    surroundings[5] = world.getBlockState(context.getBlockPos().add(0, 0, -1)).getBlock();
-                    surroundings[6] = world.getBlockState(context.getBlockPos().add(-1, 0, 0)).getBlock();
-                    surroundings[7] = world.getBlockState(context.getBlockPos().add(1, 0, 0)).getBlock();
+                    surface[0] = world.getBlockState(context.getBlockPos().add(1, 0, 1)).getBlock();
+                    surface[1] = world.getBlockState(context.getBlockPos().add(-1, 0, -1)).getBlock();
+                    surface[2] = world.getBlockState(context.getBlockPos().add(1, 0, -1)).getBlock();
+                    surface[3] = world.getBlockState(context.getBlockPos().add(-1, 0, 1)).getBlock();
+                    surface[4] = world.getBlockState(context.getBlockPos().add(0, 0, 1)).getBlock();
+                    surface[5] = world.getBlockState(context.getBlockPos().add(0, 0, -1)).getBlock();
+                    surface[6] = world.getBlockState(context.getBlockPos().add(-1, 0, 0)).getBlock();
+                    surface[7] = world.getBlockState(context.getBlockPos().add(1, 0, 0)).getBlock();
                     upSurroundings[0] = world.getBlockState(context.getBlockPos().add(1, 1, 1)).getBlock();
                     upSurroundings[1] = world.getBlockState(context.getBlockPos().add(-1, 1, -1)).getBlock();
                     upSurroundings[2] = world.getBlockState(context.getBlockPos().add(1, 1, -1)).getBlock();
@@ -91,44 +91,48 @@ public class BlueprintFloorItem extends Item {
                     centralBlocksGrid[5] = world.getBlockState(context.getBlockPos().add(-6, 1, 6)).getBlock();
                     centralBlocksGrid[6] = world.getBlockState(context.getBlockPos().add(-6, 1, -6)).getBlock();
                     centralBlocksGrid[7] = world.getBlockState(context.getBlockPos().add(6, 1, -6)).getBlock();
-                    boolean same = false, otherSame = false;
+                    boolean isSurfaceBuildable = false, isOnGrid = false;
                     int counter = 0;
                     int i = 0;
-                    while (!same) {
-                        if (surroundings[i].equals(clickedBlock))
+                    while (!isSurfaceBuildable) {
+                        if (surface[i].equals(clickedBlock))
                             counter++;
                         i++;
                         if (counter == 8)
-                            same = true;
+                            isSurfaceBuildable = true;
                         if (i == 8)
                             break;
                     }
                     i = 0;
                     counter = 0;
-                    while (!otherSame) {
+                    while (!isOnGrid) {
                         if (centralBlocksGrid[i].equals(Blocks.AIR) || CENTER_BUILDING_BLOCKS.contains(centralBlocksGrid[i]))
                             counter++;
                         i++;
                         if (counter == 8)
-                            otherSame = true;
+                            isOnGrid = true;
                         if (i == 8)
                             break;
                     }
                     int amount = 9;
+                    boolean isOverlapping = false;
                     for (Block upSurrounding : upSurroundings) {
                         if (BUILDING_BLOCKS.contains(upSurrounding))
                             amount--;
+                        if (!(upSurrounding.equals(Blocks.AIR) || BUILDING_BLOCKS.contains(upSurrounding))) {
+                            isOverlapping = true;
+                            break;
+                        }
                     }
-                    if (same && otherSame) {
+                    if (isSurfaceBuildable && isOnGrid && !isOverlapping) {
                         placeFloor(world, context, amount);
-                    } else if (!otherSame){
+                    } else if (!isOnGrid && isSurfaceBuildable && !isOverlapping){
                         player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 5, 1);
                         player.sendMessage(Text.translatable("text.rustcraft.off_grid"), true);
                     } else {
                         player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 5, 1);
                         player.sendMessage(Text.translatable("text.rustcraft.non_buildable_surface"), true);
                     }
-
                 } else {
                     player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 5, 1);
                     player.sendMessage(Text.translatable("text.rustcraft.non_buildable_surface"), true);
