@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "rustcraft:block/buildable_sand_block"
+    }
+  }
+}

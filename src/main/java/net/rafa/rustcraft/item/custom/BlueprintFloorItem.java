@@ -23,6 +23,11 @@ public class BlueprintFloorItem extends Item {
 
     private static final Item RESOURCE_NEEDED = ModItems.WOOD;
 
+    private static final Set<Block> BUILDABLE_BLOCKS =
+            Set.of(
+                    ModBlocks.BUILDABLE_GRASS_BLOCK, ModBlocks.BUILDABLE_SAND_BLOCK
+            );
+
     private static final Set<Block> CENTER_BUILDING_BLOCKS =
             Set.of(
                     ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK_CENTER,
@@ -65,7 +70,7 @@ public class BlueprintFloorItem extends Item {
         if (!world.isClient) {
             ServerPlayerEntity player = ((ServerPlayerEntity) context.getPlayer());
             if (player != null) {
-                if (clickedBlock.equals(Blocks.SANDSTONE)) {
+                if (BUILDABLE_BLOCKS.contains(clickedBlock)) {
                     surface[0] = world.getBlockState(context.getBlockPos().add(1, 0, 1)).getBlock();
                     surface[1] = world.getBlockState(context.getBlockPos().add(-1, 0, -1)).getBlock();
                     surface[2] = world.getBlockState(context.getBlockPos().add(1, 0, -1)).getBlock();

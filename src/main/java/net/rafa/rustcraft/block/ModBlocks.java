@@ -15,6 +15,20 @@ import net.rafa.rustcraft.block.custom.ResourceVendingMachineBlock;
 
 public class ModBlocks {
 
+    public static final Block BUILDABLE_SAND_BLOCK = registerBlock("buildable_sand_block", new Block(
+            AbstractBlock.Settings.create()
+                    .strength(-1)
+                    .requiresTool()
+                    .sounds(BlockSoundGroup.SAND)
+    ));
+
+    public static final Block BUILDABLE_GRASS_BLOCK = registerBlock("buildable_grass_block", new Block(
+            AbstractBlock.Settings.create()
+                    .strength(-1)
+                    .requiresTool()
+                    .sounds(BlockSoundGroup.GRASS)
+    ));
+
     public static final Block SULFUR_ORE = registerBlock("sulfur_ore",
             new ExperienceDroppingBlock(UniformIntProvider.create(2, 5),
                     AbstractBlock.Settings.create()
