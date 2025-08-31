@@ -40,48 +40,56 @@ public class ModBlocks {
             AbstractBlock.Settings.create()
                     .strength(-1)
                     .requiresTool()
+                    .sounds(BlockSoundGroup.WOOD)
                     ));
 
     public static final Block WOODEN_BUILDING_BLOCK_CENTER = registerBlock("wooden_building_block_center", new Block(
             AbstractBlock.Settings.create()
                     .strength(-1)
                     .requiresTool()
+                    .sounds(BlockSoundGroup.WOOD)
     ));
 
     public static final Block STONE_BUILDING_BLOCK = registerBlock("stone_building_block", new Block(
             AbstractBlock.Settings.create()
                     .strength(-1)
                     .requiresTool()
+                    .sounds(BlockSoundGroup.STONE)
     ));
 
     public static final Block STONE_BUILDING_BLOCK_CENTER = registerBlock("stone_building_block_center", new Block(
             AbstractBlock.Settings.create()
                     .strength(-1)
                     .requiresTool()
+                    .sounds(BlockSoundGroup.STONE)
     ));
 
     public static final Block METAL_BUILDING_BLOCK = registerBlock("metal_building_block", new Block(
             AbstractBlock.Settings.create()
                     .strength(-1)
                     .requiresTool()
+                    .sounds(BlockSoundGroup.CHAIN)
     ));
 
     public static final Block METAL_BUILDING_BLOCK_CENTER = registerBlock("metal_building_block_center", new Block(
             AbstractBlock.Settings.create()
                     .strength(-1)
                     .requiresTool()
+                    .sounds(BlockSoundGroup.CHAIN)
     ));
 
     public static final Block HIGH_QUALITY_METAL_BUILDING_BLOCK = registerBlock("high_quality_metal_building_block", new Block(
             AbstractBlock.Settings.create()
                     .strength(-1)
                     .requiresTool()
+                    .sounds(BlockSoundGroup.METAL)
     ));
 
     public static final Block HIGH_QUALITY_METAL_BUILDING_BLOCK_CENTER = registerBlock("high_quality_metal_building_block_center", new Block(
             AbstractBlock.Settings.create()
                     .strength(-1)
                     .requiresTool()
+                    .sounds(BlockSoundGroup.METAL)
     ));
 
     public static final Block RESOURCE_VENDING_MACHINE_BLOCK = registerBlock("resource_vending_machine_block", new ResourceVendingMachineBlock(
