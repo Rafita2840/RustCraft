@@ -2,6 +2,7 @@ package net.rafa.rustcraft.item.custom;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
@@ -97,7 +98,8 @@ public class HammerItem extends Item {
                         else
                             removeWall(world, context, clickedBlock, player, side);
                     } else {
-                        player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 1, 1);
+                        playSound(world, player, SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR);
+//                        player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 5, 1);
                         player.sendMessage(Text.translatable("text.rustcraft.cant_remove"), true);
                     }
                 } else if (UPGRADE_CENTER_BLOCKS_MAP.containsKey(clickedBlock)) {
@@ -107,7 +109,8 @@ public class HammerItem extends Item {
                     else
                         upgradeFloor(world, context, clickedBlock, player);
                 } else {
-                    player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 1, 1);
+                    playSound(world, player, SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR);
+//                    player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 5, 1);
                     player.sendMessage(Text.translatable("text.rustcraft.cant_use"), true);
                 }
             }
@@ -184,9 +187,11 @@ public class HammerItem extends Item {
                         }
                     }
                     world.setBlockState(context.getBlockPos(), UPGRADE_CENTER_BLOCKS_MAP.get(clickedBlock).getDefaultState());
-                    player.playSoundToPlayer(UPGRADE_SOUND_MAP.get(clickedBlock), SoundCategory.BLOCKS, 20, 1);
+                    playSound(world, player, UPGRADE_SOUND_MAP.get(clickedBlock));
+//                    player.playSoundToPlayer(UPGRADE_SOUND_MAP.get(clickedBlock), SoundCategory.BLOCKS, 20, 1);
                 } else  {
-                    player.playSoundToPlayer(SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundCategory.BLOCKS, 20, 1);
+                    playSound(world, player, SoundEvents.UI_STONECUTTER_TAKE_RESULT);
+//                    player.playSoundToPlayer(SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundCategory.BLOCKS, 20, 1);
                     player.sendMessage(Text.translatable("text.rustcraft.not_enough_resources"), true);
                 }
                 if (k > 0 && !success){
@@ -244,9 +249,11 @@ public class HammerItem extends Item {
                         }
                     }
                     world.setBlockState(context.getBlockPos(), UPGRADE_CENTER_BLOCKS_MAP.get(clickedBlock).getDefaultState());
-                    player.playSoundToPlayer(UPGRADE_SOUND_MAP.get(clickedBlock), SoundCategory.BLOCKS, 20, 1);
+                    playSound(world, player, UPGRADE_SOUND_MAP.get(clickedBlock));
+//                    player.playSoundToPlayer(UPGRADE_SOUND_MAP.get(clickedBlock), SoundCategory.BLOCKS, 20, 1);
                 } else  {
-                    player.playSoundToPlayer(SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundCategory.BLOCKS, 20, 1);
+                    playSound(world, player, SoundEvents.UI_STONECUTTER_TAKE_RESULT);
+//                    player.playSoundToPlayer(SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundCategory.BLOCKS, 20, 1);
                     player.sendMessage(Text.translatable("text.rustcraft.not_enough_resources"), true);
                 }
                 if (k > 0 && !success){
@@ -289,7 +296,8 @@ public class HammerItem extends Item {
         }
         for (int n = 0; n < removed; n++)
             player.getInventory().offerOrDrop(ModItems.WOOD.getDefaultStack());
-        player.playSoundToPlayer(SoundEvents.BLOCK_LADDER_STEP, SoundCategory.BLOCKS, 20, 1);
+        playSound(world, player, SoundEvents.BLOCK_LADDER_STEP);
+//        player.playSoundToPlayer(SoundEvents.BLOCK_LADDER_STEP, SoundCategory.BLOCKS, 20, 1);
     }
 
     private void removeWall(World world, ItemUsageContext context, Block clickedBlock, ServerPlayerEntity player, Direction side) {
@@ -331,7 +339,8 @@ public class HammerItem extends Item {
             }
             for (int i = 0; i < removed; i++)
                 player.getInventory().offerOrDrop(ModItems.WOOD.getDefaultStack());
-            player.playSoundToPlayer(SoundEvents.BLOCK_LADDER_STEP, SoundCategory.BLOCKS, 20, 1);
+            playSound(world, player, SoundEvents.BLOCK_LADDER_STEP);
+//            player.playSoundToPlayer(SoundEvents.BLOCK_LADDER_STEP, SoundCategory.BLOCKS, 20, 1);
         }
     }
 
@@ -369,4 +378,9 @@ public class HammerItem extends Item {
         }
         return false;
     }
+
+    private void playSound(World world, PlayerEntity player, SoundEvent sound){
+        world.playSound(null, player.getBlockPos(), sound, SoundCategory.BLOCKS, 20, 1);
+    }
+
 }

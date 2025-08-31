@@ -8,6 +8,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
@@ -88,14 +89,14 @@ public class BlueprintFloorItem extends Item {
                     upSurroundings[6] = world.getBlockState(context.getBlockPos().add(-1, 1, 0)).getBlock();
                     upSurroundings[7] = world.getBlockState(context.getBlockPos().add(1, 1, 0)).getBlock();
                     upSurroundings[8] = world.getBlockState(context.getBlockPos().add(0, 1, 0)).getBlock();
-                    centralBlocksGrid[0] = world.getBlockState(context.getBlockPos().add(3, 1, 3)).getBlock();
-                    centralBlocksGrid[1] = world.getBlockState(context.getBlockPos().add(-3, 1, 3)).getBlock();
-                    centralBlocksGrid[2] = world.getBlockState(context.getBlockPos().add(-3, 1, -3)).getBlock();
-                    centralBlocksGrid[3] = world.getBlockState(context.getBlockPos().add(3, 1, -6)).getBlock();
-                    centralBlocksGrid[4] = world.getBlockState(context.getBlockPos().add(6, 1, 6)).getBlock();
-                    centralBlocksGrid[5] = world.getBlockState(context.getBlockPos().add(-6, 1, 6)).getBlock();
-                    centralBlocksGrid[6] = world.getBlockState(context.getBlockPos().add(-6, 1, -6)).getBlock();
-                    centralBlocksGrid[7] = world.getBlockState(context.getBlockPos().add(6, 1, -6)).getBlock();
+                    centralBlocksGrid[0] = world.getBlockState(context.getBlockPos().add(0, 1, 3)).getBlock();
+                    centralBlocksGrid[2] = world.getBlockState(context.getBlockPos().add(0, 1, -3)).getBlock();
+                    centralBlocksGrid[3] = world.getBlockState(context.getBlockPos().add(3, 1, 0)).getBlock();
+                    centralBlocksGrid[1] = world.getBlockState(context.getBlockPos().add(-3, 1, 0)).getBlock();
+                    centralBlocksGrid[4] = world.getBlockState(context.getBlockPos().add(0, 1, 6)).getBlock();
+                    centralBlocksGrid[5] = world.getBlockState(context.getBlockPos().add(0, 1, -6)).getBlock();
+                    centralBlocksGrid[7] = world.getBlockState(context.getBlockPos().add(6, 1, 0)).getBlock();
+                    centralBlocksGrid[6] = world.getBlockState(context.getBlockPos().add(-6, 1, 0)).getBlock();
                     boolean isSurfaceBuildable = false, isOnGrid = false;
                     int counter = 0;
                     int i = 0;
@@ -132,14 +133,17 @@ public class BlueprintFloorItem extends Item {
                     if (isSurfaceBuildable && isOnGrid && !isOverlapping) {
                         placeFloor(world, context, amount);
                     } else if (!isOnGrid && isSurfaceBuildable && !isOverlapping){
-                        player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 5, 1);
+                        playSound(world, player, SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR);
+//                        player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 5, 1);
                         player.sendMessage(Text.translatable("text.rustcraft.off_grid"), true);
                     } else {
-                        player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 5, 1);
+                        playSound(world, player, SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR);
+//                        player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 5, 1);
                         player.sendMessage(Text.translatable("text.rustcraft.non_buildable_surface"), true);
                     }
                 } else {
-                    player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 5, 1);
+                    playSound(world, player, SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR);
+//                    player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 5, 1);
                     player.sendMessage(Text.translatable("text.rustcraft.non_buildable_surface"), true);
                 }
             }
@@ -181,9 +185,11 @@ public class BlueprintFloorItem extends Item {
                         }
                     }
                     world.setBlockState(context.getBlockPos().add(0, 1, 0), ModBlocks.WOODEN_BUILDING_BLOCK_CENTER.getDefaultState());
-                    player.playSoundToPlayer(SoundEvents.ENTITY_VILLAGER_WORK_FLETCHER, SoundCategory.BLOCKS, 20, 1);
+                    playSound(world, player, SoundEvents.ENTITY_VILLAGER_WORK_FLETCHER);
+//                    player.playSoundToPlayer(SoundEvents.ENTITY_VILLAGER_WORK_FLETCHER, SoundCategory.BLOCKS, 20, 1);
                 } else  {
-                    player.playSoundToPlayer(SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundCategory.BLOCKS, 20, 1);
+                    playSound(world, player, SoundEvents.UI_STONECUTTER_TAKE_RESULT);
+//                    player.playSoundToPlayer(SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundCategory.BLOCKS, 20, 1);
                     player.sendMessage(Text.translatable("text.rustcraft.not_enough_resources"), true);
                 }
                 if (k > 0 && !success){
@@ -199,5 +205,9 @@ public class BlueprintFloorItem extends Item {
                 }
             }
         }
+    }
+
+    private void playSound(World world, PlayerEntity player, SoundEvent sound){
+        world.playSound(null, player.getBlockPos(), sound, SoundCategory.BLOCKS, 20, 1);
     }
 }

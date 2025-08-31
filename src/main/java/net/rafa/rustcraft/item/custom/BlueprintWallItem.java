@@ -8,6 +8,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
@@ -83,10 +84,12 @@ public class BlueprintWallItem extends Item {
                     if (CENTER_BLOCK_MAP.containsKey(clickedBlock) && context.getSide().equals(Direction.UP)) {
                         placeWall(world, player);
                     } else {
-                        player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 1, 1);
+                        playSound(world, player, SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR);
+//                        player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 1, 1);
                     }
                 } else {
-                    player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 1, 1);
+                    playSound(world, player, SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR);
+//                    player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 1, 1);
                     player.sendMessage(Text.translatable("text.rustcraft.cant_use"), true);
                 }
             }
@@ -271,10 +274,12 @@ public class BlueprintWallItem extends Item {
                             world.setBlockState(wallPlace[i], ModBlocks.WOODEN_BUILDING_BLOCK.getDefaultState());
                 }
                 world.setBlockState(wallPlace[2], ModBlocks.WOODEN_BUILDING_BLOCK_CENTER.getDefaultState());
-                player.playSoundToPlayer(SoundEvents.ENTITY_VILLAGER_WORK_FLETCHER, SoundCategory.BLOCKS, 20, 1);
+                playSound(world, player, SoundEvents.ENTITY_VILLAGER_WORK_FLETCHER);
+//                player.playSoundToPlayer(SoundEvents.ENTITY_VILLAGER_WORK_FLETCHER, SoundCategory.BLOCKS, 20, 1);
             }
             else  {
-                player.playSoundToPlayer(SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundCategory.BLOCKS, 20, 1);
+                playSound(world, player, SoundEvents.UI_STONECUTTER_TAKE_RESULT);
+//                player.playSoundToPlayer(SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundCategory.BLOCKS, 20, 1);
                 player.sendMessage(Text.translatable("text.rustcraft.not_enough_resources"), true);
             }
             if (k > 0 && !success){
@@ -289,5 +294,9 @@ public class BlueprintWallItem extends Item {
 
             }
         }
+    }
+
+    private void playSound(World world, PlayerEntity player, SoundEvent sound){
+        world.playSound(null, player.getBlockPos(), sound, SoundCategory.BLOCKS, 20, 1);
     }
 }
