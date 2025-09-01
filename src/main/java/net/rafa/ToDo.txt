@@ -1,0 +1,25 @@
+TODO
+-Barrels
+-Barrel resources
+-Boxes (military... etc)
+-Hemp plant
+-Corn
+-Bear
+-Cards
+-Doors with cards
+-Doors with keypad
+-Tools
+-Clothes
+-Effects (radiation -> custom biome to receive radiation, bleeding, freezing -> minecraft default)
+-> property to add radiation and cold protection
+-Thirst bar -> saturation and thirst as nbt data for start tick if player
+                is still add 1
+                is moving add 2    ----> horizontal speed?
+                is running add 7
+                is jumping(?) add 2
+                -> max total 12
+                -> saturation to decrease thirst
+-Guns (pain in the ass)
+-Drinkable water (fluid)
+-Force gamma to be low
+-BodiesBodies mod
