@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "rustcraft:block/drinkable_block"
+    }
+  }
+}
