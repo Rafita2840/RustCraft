@@ -1,11 +1,8 @@
 package net.rafa.rustcraft.util;
 
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.rafa.rustcraft.networking.ModMessages;
 import net.rafa.rustcraft.networking.ThirstSyncS2CPayload;
 
 public class ThirstData {
