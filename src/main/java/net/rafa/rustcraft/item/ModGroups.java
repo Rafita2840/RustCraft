@@ -47,6 +47,7 @@ public class ModGroups {
                         entries.add(ModBlocks.RESOURCE_VENDING_MACHINE_BLOCK);
                         entries.add(ModBlocks.BUILDABLE_GRASS_BLOCK);
                         entries.add(ModBlocks.BUILDABLE_SAND_BLOCK);
+                        entries.add(ModBlocks.DRINKABLE_BLOCK);
                     }).build());
 
     public static void registerModItemGroups(){

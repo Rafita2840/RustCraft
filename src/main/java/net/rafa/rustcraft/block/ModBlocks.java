@@ -11,6 +11,7 @@ import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.intprovider.UniformIntProvider;
 import net.rafa.rustcraft.RustCraft;
+import net.rafa.rustcraft.block.custom.DrinkableBlock;
 import net.rafa.rustcraft.block.custom.ResourceVendingMachineBlock;
 
 public class ModBlocks {
@@ -97,6 +98,12 @@ public class ModBlocks {
                     .strength(-1)
                     .requiresTool()
                     .nonOpaque()
+    ));
+
+    public static final Block DRINKABLE_BLOCK = registerBlock("drinkable_block", new DrinkableBlock(
+            AbstractBlock.Settings.create()
+                    .strength(-1)
+                    .requiresTool()
     ));
 
     private static Block registerBlock(String name, Block block) {
