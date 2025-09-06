@@ -16,13 +16,14 @@ public abstract class ServerPlayerEntityMixin {
         IEntityDataSaver newData = (IEntityDataSaver) this;
 
         if (!alive) {
-            newData.getPersistentData().putInt("thirst", 5);
+            ThirstData.syncThirst(10, newData);
+            newData.getPersistentData().putInt("thirst", 10);
         } else {
-            newData.getPersistentData().putInt(
-                    "thirst", oldData.getPersistentData().getInt("thirst")
-            );
+            int oldThirst = oldData.getPersistentData().getInt("thirst");
+            ThirstData.syncThirst(oldThirst, newData);
+            newData.getPersistentData().putInt("thirst", oldThirst);
         }
 
-        ThirstData.syncThirst(newData);
+        ThirstData.syncThirst(newData.getPersistentData().getInt("thirst"), newData);
     }
 }

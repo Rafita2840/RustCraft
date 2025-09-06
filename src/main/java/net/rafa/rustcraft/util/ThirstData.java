@@ -10,8 +10,9 @@ public class ThirstData {
     public static int addThirst(IEntityDataSaver player, int amount){
         NbtCompound nbt = player.getPersistentData();
         int thirst = nbt.getInt("thirst");
-        thirst = Math.min(thirst + amount, 10);
+        thirst = Math.min(thirst + amount, 20);
         nbt.putInt("thirst", thirst);
+        syncThirst(thirst, player);
         return thirst;
     }
 
@@ -20,11 +21,11 @@ public class ThirstData {
         int thirst = nbt.getInt("thirst");
         thirst = Math.max(thirst - amount, 0);
         nbt.putInt("thirst", thirst);
+        syncThirst(thirst, player);
         return thirst;
     }
 
-    public static void syncThirst(IEntityDataSaver player) {
-        int thirst = player.getPersistentData().getInt("thirst");
+    public static void syncThirst(int thirst, IEntityDataSaver player) {
         ThirstSyncS2CPayload payload = new ThirstSyncS2CPayload(thirst);
         ServerPlayNetworking.send((ServerPlayerEntity) player, payload);
     }

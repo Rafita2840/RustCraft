@@ -20,4 +20,8 @@ public record ThirstSyncS2CPayload(int thirstValue) implements CustomPayload {
     public Id<? extends CustomPayload> getId() {
         return PAYLOAD_ID;
     }
+
+    public static String getPath(){
+        return "thirst";
+    }
 }

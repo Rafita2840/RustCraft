@@ -30,17 +30,16 @@ public class PlayerTickHandler implements ServerTickEvents.StartTick {
             }
             IEntityDataSaver dataPlayer = ((IEntityDataSaver) player);
             if (ThirstSaturationData.addSaturation(dataPlayer, amount) == 5000) {
-                ThirstData.removeThirst(dataPlayer, 1);
-                ThirstData.syncThirst(dataPlayer);
                 ThirstSaturationData.resetSaturation(dataPlayer);
+                ThirstData.removeThirst(dataPlayer, 1);
             }
-            player.sendMessage(Text.literal("Saturation " +
-                                    ((IEntityDataSaver) player)
-                                            .getPersistentData()
-                                            .getInt("thirst_saturation"))
-                            .fillStyle(Style.EMPTY
-                                    .withColor(Formatting.AQUA)),
-                    true);
+//            player.sendMessage(Text.literal("Saturation " +
+//                                    ((IEntityDataSaver) player)
+//                                            .getPersistentData()
+//                                            .getInt("thirst_saturation"))
+//                            .fillStyle(Style.EMPTY
+//                                    .withColor(Formatting.AQUA)),
+//                    true);
         }
     }
 }

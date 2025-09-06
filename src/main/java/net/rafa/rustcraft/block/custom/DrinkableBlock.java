@@ -25,23 +25,14 @@ public class DrinkableBlock extends Block {
         if (!world.isClient) {
             ServerPlayerEntity serverPlayer = ((ServerPlayerEntity) player);
             if (serverPlayer.isSneaking()) {
-                serverPlayer.sendMessage(Text.literal("Thirst " +
-                                        ((IEntityDataSaver) player)
-                                                .getPersistentData()
-                                                .getInt("thirst"))
-                                .fillStyle(Style.EMPTY
-                                        .withColor(Formatting.AQUA)),
-                        false);
                 ThirstData.addThirst(((IEntityDataSaver) player), 1);
             }
-            serverPlayer.sendMessage(Text.literal("Thirst " +
-                                    ((IEntityDataSaver) player)
-                                            .getPersistentData()
-                                            .getInt("thirst"))
-                            .fillStyle(Style.EMPTY
-                                    .withColor(Formatting.AQUA)),
-                    false);
-            ThirstData.syncThirst(((IEntityDataSaver) player));
+            int thirst = ((IEntityDataSaver) player).getPersistentData().getInt("thirst");
+//            serverPlayer.sendMessage(Text.literal("Thirst " + thirst)
+//                            .fillStyle(Style.EMPTY
+//                                    .withColor(Formatting.AQUA)),
+//                    false);
+            ThirstData.syncThirst(thirst, ((IEntityDataSaver) player));
         }
         return ActionResult.SUCCESS;
     }

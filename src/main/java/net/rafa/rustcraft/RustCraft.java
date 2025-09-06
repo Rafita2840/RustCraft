@@ -10,6 +10,7 @@ import net.rafa.rustcraft.block.ModBlocks;
 import net.rafa.rustcraft.event.PlayerTickHandler;
 import net.rafa.rustcraft.item.ModGroups;
 import net.rafa.rustcraft.item.ModItems;
+import net.rafa.rustcraft.networking.ThirstSaturationSyncS2CPayload;
 import net.rafa.rustcraft.networking.ThirstSyncS2CPayload;
 import net.rafa.rustcraft.util.IEntityDataSaver;
 import net.rafa.rustcraft.util.ThirstData;
@@ -29,10 +30,12 @@ public class RustCraft implements ModInitializer {
         ServerTickEvents.START_SERVER_TICK.register(new PlayerTickHandler());
 
         PayloadTypeRegistry.playS2C().register(ThirstSyncS2CPayload.PAYLOAD_ID, ThirstSyncS2CPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(ThirstSaturationSyncS2CPayload.PAYLOAD_ID, ThirstSaturationSyncS2CPayload.CODEC);
 
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             ServerPlayerEntity player = handler.player;
-            ThirstData.syncThirst((IEntityDataSaver) player);
+            int thirst = ((IEntityDataSaver) player).getPersistentData().getInt("thirst");
+            ThirstData.syncThirst(thirst, (IEntityDataSaver) player);
         });
     }
 }
