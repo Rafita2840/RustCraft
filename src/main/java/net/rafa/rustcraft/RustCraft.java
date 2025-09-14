@@ -7,11 +7,13 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.rafa.rustcraft.block.ModBlocks;
+import net.rafa.rustcraft.block.entity.ModBlockEntities;
 import net.rafa.rustcraft.event.PlayerTickHandler;
 import net.rafa.rustcraft.item.ModGroups;
 import net.rafa.rustcraft.item.ModItems;
 import net.rafa.rustcraft.networking.ThirstSaturationSyncS2CPayload;
 import net.rafa.rustcraft.networking.ThirstSyncS2CPayload;
+import net.rafa.rustcraft.screen.ModScreenHandlers;
 import net.rafa.rustcraft.util.IEntityDataSaver;
 import net.rafa.rustcraft.util.ThirstData;
 import org.slf4j.Logger;
@@ -26,6 +28,8 @@ public class RustCraft implements ModInitializer {
         ModGroups.registerModItemGroups();
         ModBlocks.registerModBlocks();
         ModItems.registerModItems();
+        ModBlockEntities.registerModBlockEntities();
+        ModScreenHandlers.registerScreenHandlers();
 
         ServerTickEvents.START_SERVER_TICK.register(new PlayerTickHandler());
 

@@ -4,9 +4,12 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.rafa.rustcraft.client.ThirstHudOverlay;
 import net.rafa.rustcraft.networking.ThirstSaturationSyncS2CPayload;
 import net.rafa.rustcraft.networking.ThirstSyncS2CPayload;
+import net.rafa.rustcraft.screen.ModScreenHandlers;
+import net.rafa.rustcraft.screen.custom.DefaultCrateScreen;
 import net.rafa.rustcraft.util.IEntityDataSaver;
 
 public class RustCraftClient implements ClientModInitializer {
@@ -32,5 +35,6 @@ public class RustCraftClient implements ClientModInitializer {
                         }
                     });
                 }));
+        HandledScreens.register(ModScreenHandlers.CRATE_SCREEN_HANDLER, DefaultCrateScreen::new);
     }
 }

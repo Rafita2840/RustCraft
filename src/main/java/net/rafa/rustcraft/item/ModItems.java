@@ -1,5 +1,6 @@
 package net.rafa.rustcraft.item;
 
+import net.minecraft.item.ArmorItem;
 import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -27,6 +28,28 @@ public class ModItems {
     public static final Item BLUEPRINT_STAIRS = registerItem("blueprint_stairs", new BlueprintStairsItem(new Item.Settings().maxCount(1)));
     public static final Item BLUEPRINT_WALL = registerItem("blueprint_wall", new BlueprintWallItem(new Item.Settings().maxCount(1)));
 
+    public static final Item HAZMAT_SUIT_HELMET = registerItem("hazmat_suit_helmet",
+            new ArmorItem(ModArmorMaterials.HAZMAT_SUIT_ARMOR_MATERIAL, ArmorItem.Type.HELMET,
+                    new Item.Settings()
+                            .maxDamage(ArmorItem.Type.HELMET.getMaxDamage(20))
+            ));
+    public static final Item HAZMAT_SUIT_CHESTPLATE = registerItem("hazmat_suit_chestplate",
+            new ArmorItem(ModArmorMaterials.HAZMAT_SUIT_ARMOR_MATERIAL, ArmorItem.Type.CHESTPLATE,
+                    new Item.Settings()
+                            .maxDamage(ArmorItem.Type.CHESTPLATE.getMaxDamage(20))
+            ));
+    public static final Item HAZMAT_SUIT_LEGGINGS = registerItem("hazmat_suit_leggings",
+            new ArmorItem(ModArmorMaterials.HAZMAT_SUIT_ARMOR_MATERIAL, ArmorItem.Type.LEGGINGS,
+                    new Item.Settings()
+                            .maxDamage(ArmorItem.Type.LEGGINGS.getMaxDamage(20))
+            ));
+    public static final Item HAZMAT_SUIT_BOOTS = registerItem("hazmat_suit_boots",
+            new ArmorItem(ModArmorMaterials.HAZMAT_SUIT_ARMOR_MATERIAL, ArmorItem.Type.BOOTS,
+                    new Item.Settings()
+                            .maxDamage(ArmorItem.Type.BOOTS.getMaxDamage(20))
+            ));
+    
+    
 
 
     private static Item registerItem(String name, Item item){

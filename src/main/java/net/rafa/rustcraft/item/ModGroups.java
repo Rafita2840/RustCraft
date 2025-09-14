@@ -28,6 +28,10 @@ public class ModGroups {
                         entries.add(ModItems.STONE);
                         entries.add(ModItems.METAL);
                         entries.add(ModItems.HIGH_QUALITY_METAL);
+                        entries.add(ModItems.HAZMAT_SUIT_BOOTS);
+                        entries.add(ModItems.HAZMAT_SUIT_LEGGINGS);
+                        entries.add(ModItems.HAZMAT_SUIT_CHESTPLATE);
+                        entries.add(ModItems.HAZMAT_SUIT_HELMET);
                     }).build());
 
     public static final ItemGroup RUSTCRAFT_BLOCKS_GROUP = Registry.register(Registries.ITEM_GROUP,
@@ -48,6 +52,7 @@ public class ModGroups {
                         entries.add(ModBlocks.BUILDABLE_GRASS_BLOCK);
                         entries.add(ModBlocks.BUILDABLE_SAND_BLOCK);
                         entries.add(ModBlocks.DRINKABLE_BLOCK);
+                        entries.add(ModBlocks.CRATE);
                     }).build());
 
     public static void registerModItemGroups(){
