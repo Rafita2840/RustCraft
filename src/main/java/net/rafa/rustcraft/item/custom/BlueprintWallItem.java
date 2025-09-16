@@ -26,12 +26,10 @@ import java.util.TreeMap;
 
 public class BlueprintWallItem extends Item {
 
-    private static final Map<Block, Block> CENTER_BLOCK_MAP =
-            Map.of(
-                    ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModBlocks.WOODEN_BUILDING_BLOCK_CENTER,
-                    ModBlocks.STONE_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK_CENTER,
-                    ModBlocks.METAL_BUILDING_BLOCK_CENTER, ModBlocks.METAL_BUILDING_BLOCK_CENTER,
-                    ModBlocks.HIGH_QUALITY_METAL_BUILDING_BLOCK_CENTER, ModBlocks.HIGH_QUALITY_METAL_BUILDING_BLOCK_CENTER
+    private static final Set<Block> CENTER_BLOCKS =
+            Set.of(
+                    ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK_CENTER,
+                    ModBlocks.METAL_BUILDING_BLOCK_CENTER, ModBlocks.HIGH_QUALITY_METAL_BUILDING_BLOCK_CENTER
             );
 
     private static final Set<Block> BUILDING_BLOCKS =
@@ -80,16 +78,20 @@ public class BlueprintWallItem extends Item {
         if (!world.isClient) {
             ServerPlayerEntity player = ((ServerPlayerEntity) context.getPlayer());
             if (player != null) {
-                if (checks(world, context, clickedBlock, player)) {
-                    if (CENTER_BLOCK_MAP.containsKey(clickedBlock) && context.getSide().equals(Direction.UP)) {
-                        placeWall(world, player);
+                if (CENTER_BLOCKS.contains(clickedBlock)) {
+                    if (context.getSide().equals(Direction.UP)) {
+                        if (checks(world, context, player)) {
+                            placeWall(world, player);
+                        } else {
+                            playSound(world, player, SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR);
+                            player.sendMessage(Text.translatable("text.rustcraft.cant_place_wall"), true);
+                        }
                     } else {
                         playSound(world, player, SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR);
-//                        player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 1, 1);
+                        player.sendMessage(Text.translatable("text.rustcraft.cant_place_wall"), true);
                     }
                 } else {
                     playSound(world, player, SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR);
-//                    player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 1, 1);
                     player.sendMessage(Text.translatable("text.rustcraft.cant_use"), true);
                 }
             }
@@ -97,49 +99,69 @@ public class BlueprintWallItem extends Item {
         return ActionResult.SUCCESS;
     }
 
-    private boolean checks(World world, ItemUsageContext context, Block clickedBlock, ServerPlayerEntity player) {
+    private boolean checks(World world, ItemUsageContext context, ServerPlayerEntity player) {
         boolean checks = false;
         Direction direction = player.getHorizontalFacing();
         int xOffset = 0;
+        int xOffset2 = 0;
         int zOffset = 0;
+        int zOffset2 = 0;
         switch (direction) {
-            case NORTH -> zOffset = -2;
-            case SOUTH -> zOffset = 2;
-            case WEST -> xOffset = -2;
-            case EAST -> xOffset = 2;
+            case NORTH -> {
+                zOffset = -2;
+                zOffset2 = -1;
+            }
+            case SOUTH -> {
+                zOffset = 2;
+                zOffset2 = 1;
+            }
+            case WEST -> {
+                xOffset = -2;
+                xOffset2 = -1;
+            }
+            case EAST -> {
+                xOffset = 2;
+                xOffset2 = 1;
+            }
         }
-        wallPlace[0] = context.getBlockPos().add(xOffset, 0, zOffset);
-        wallPlace[1] = context.getBlockPos().add(xOffset, 1, zOffset);
-        wallPlace[2] = context.getBlockPos().add(xOffset, 2, zOffset);
-        wallPlace[3] = context.getBlockPos().add(xOffset, 3, zOffset);
+        BlockPos pos = context.getBlockPos();
+        wallPlace[0] = pos.add(xOffset, 0, zOffset);
+        wallPlace[1] = pos.add(xOffset, 1, zOffset);
+        wallPlace[2] = pos.add(xOffset, 2, zOffset);
+        wallPlace[3] = pos.add(xOffset, 3, zOffset);
         if (xOffset != 0){
-            wallPlace[4] = context.getBlockPos().add(xOffset, 0, 1);
-            wallPlace[5] = context.getBlockPos().add(xOffset, 1, 1);
-            wallPlace[6] = context.getBlockPos().add(xOffset, 2, 1);
-            wallPlace[7] = context.getBlockPos().add(xOffset, 3, 1);
-            wallPlace[8] = context.getBlockPos().add(xOffset, 0, -1);
-            wallPlace[9] = context.getBlockPos().add(xOffset, 1, -1);
-            wallPlace[10] = context.getBlockPos().add(xOffset, 2, -1);
-            wallPlace[11] = context.getBlockPos().add(xOffset, 3, -1);
+            wallPlace[4] = pos.add(xOffset, 0, 1);
+            wallPlace[5] = pos.add(xOffset, 1, 1);
+            wallPlace[6] = pos.add(xOffset, 2, 1);
+            wallPlace[7] = pos.add(xOffset, 3, 1);
+            wallPlace[8] = pos.add(xOffset, 0, -1);
+            wallPlace[9] = pos.add(xOffset, 1, -1);
+            wallPlace[10] = pos.add(xOffset, 2, -1);
+            wallPlace[11] = pos.add(xOffset, 3, -1);
         } else {
-            wallPlace[4] = context.getBlockPos().add(1, 0, zOffset);
-            wallPlace[5] = context.getBlockPos().add(1, 1, zOffset);
-            wallPlace[6] = context.getBlockPos().add(1, 2, zOffset);
-            wallPlace[7] = context.getBlockPos().add(1, 3, zOffset);
-            wallPlace[8] = context.getBlockPos().add(-1, 0, zOffset);
-            wallPlace[9] = context.getBlockPos().add(-1, 1, zOffset);
-            wallPlace[10] = context.getBlockPos().add(-1, 2, zOffset);
-            wallPlace[11] = context.getBlockPos().add(-1, 3, zOffset);
+            wallPlace[4] = pos.add(1, 0, zOffset);
+            wallPlace[5] = pos.add(1, 1, zOffset);
+            wallPlace[6] = pos.add(1, 2, zOffset);
+            wallPlace[7] = pos.add(1, 3, zOffset);
+            wallPlace[8] = pos.add(-1, 0, zOffset);
+            wallPlace[9] = pos.add(-1, 1, zOffset);
+            wallPlace[10] = pos.add(-1, 2, zOffset);
+            wallPlace[11] = pos.add(-1, 3, zOffset);
         }
         int counter = 0;
         int floors = 0;
         int side1 = 0;
         int side2 = 0;
         int i = 0;
+        boolean checkedDoubleWall = false;
         while (!checks) {
-            if (world.getBlockState(wallPlace[i]).getBlock().equals(Blocks.AIR))
+            if (!checkedDoubleWall && CENTER_BLOCKS.contains(world.getBlockState(pos.add(xOffset2, 2, zOffset2)).getBlock())) {
+                break;
+            }
+            checkedDoubleWall = true;
+            if (world.getBlockState(wallPlace[i]).getBlock().equals(Blocks.AIR)) {
                 counter++;
-            else if (i == 0 || i == 4 || i == 8)
+            } else if (i == 0 || i == 4 || i == 8)
                 if (BUILDING_BLOCKS.contains(world.getBlockState(wallPlace[i]).getBlock())) {
                     floors++;
                     if (floors == 3)
@@ -275,11 +297,9 @@ public class BlueprintWallItem extends Item {
                 }
                 world.setBlockState(wallPlace[2], ModBlocks.WOODEN_BUILDING_BLOCK_CENTER.getDefaultState());
                 playSound(world, player, SoundEvents.ENTITY_VILLAGER_WORK_FLETCHER);
-//                player.playSoundToPlayer(SoundEvents.ENTITY_VILLAGER_WORK_FLETCHER, SoundCategory.BLOCKS, 20, 1);
             }
             else  {
                 playSound(world, player, SoundEvents.UI_STONECUTTER_TAKE_RESULT);
-//                player.playSoundToPlayer(SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundCategory.BLOCKS, 20, 1);
                 player.sendMessage(Text.translatable("text.rustcraft.not_enough_resources"), true);
             }
             if (k > 0 && !success){
