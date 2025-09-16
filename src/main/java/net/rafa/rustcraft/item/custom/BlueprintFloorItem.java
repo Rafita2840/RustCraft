@@ -155,11 +155,11 @@ public class BlueprintFloorItem extends Item {
         if (!world.isClient) {
             ServerPlayerEntity player = ((ServerPlayerEntity) context.getPlayer());
             if (player != null) {
-                int[][] posAndAmount = new int[9][2];
+                int[][] posAndAmount = new int[amount][2];
                 int k = 0;
                 int count = 0;
                 boolean success = false;
-                while (!success && k < 9) {
+                while (!success && k < amount) {
                     posAndAmount[k][0] = player.getInventory().getSlotWithStack(RESOURCE_NEEDED.getDefaultStack());
                     if (posAndAmount[k][0] == -1)
                         break;
