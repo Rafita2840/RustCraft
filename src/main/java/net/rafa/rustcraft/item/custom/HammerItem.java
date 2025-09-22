@@ -2,6 +2,7 @@ package net.rafa.rustcraft.item.custom;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -28,14 +29,6 @@ public class HammerItem extends Item {
             Set.of(
                     ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK_CENTER,
                     ModBlocks.METAL_BUILDING_BLOCK_CENTER, ModBlocks.HIGH_QUALITY_METAL_BUILDING_BLOCK_CENTER
-            );
-
-    private static final Set<Block> BUILDING_BLOCKS =
-            Set.of(
-                    ModBlocks.WOODEN_BUILDING_BLOCK_CENTER, ModBlocks.WOODEN_BUILDING_BLOCK,
-                    ModBlocks.STONE_BUILDING_BLOCK_CENTER, ModBlocks.STONE_BUILDING_BLOCK,
-                    ModBlocks.METAL_BUILDING_BLOCK_CENTER, ModBlocks.METAL_BUILDING_BLOCK,
-                    ModBlocks.HIGH_QUALITY_METAL_BUILDING_BLOCK_CENTER, ModBlocks.HIGH_QUALITY_METAL_BUILDING_BLOCK
             );
 
     private static final Map<Block, Block> HAMMER_BLOCKS_CENTER_TO_OTHER =
@@ -80,6 +73,37 @@ public class HammerItem extends Item {
 
     @Override
     public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
+        boolean hasShift = Screen.hasShiftDown();
+        boolean hasControl = Screen.hasControlDown();
+        if (hasShift && !hasControl) {
+            tooltip.add(Text.translatable("tooltip.rustcraft.tool.holding_shift"));
+            tooltip.add(Text.translatable("tooltip.rustcraft.tool.default_control"));
+            tooltip.add(Text.literal(""));
+            tooltip.add(Text.translatable("tooltip.rustcraft.hammer.shift_down"));
+            tooltip.add(Text.literal(""));
+        } else if (!hasShift && hasControl) {
+            tooltip.add(Text.translatable("tooltip.rustcraft.tool.default_shift"));
+            tooltip.add(Text.translatable("tooltip.rustcraft.tool.holding_control"));
+            tooltip.add(Text.literal(""));
+            tooltip.add(Text.translatable("tooltip.rustcraft.hammer.control_down1"));
+            tooltip.add(Text.translatable("tooltip.rustcraft.hammer.control_down2"));
+            tooltip.add(Text.translatable("tooltip.rustcraft.hammer.control_down3"));
+            tooltip.add(Text.literal(""));
+        }
+        else if (hasShift){
+            tooltip.add(Text.translatable("tooltip.rustcraft.tool.holding_shift"));
+            tooltip.add(Text.translatable("tooltip.rustcraft.tool.holding_control"));
+            tooltip.add(Text.literal(""));
+            tooltip.add(Text.translatable("tooltip.rustcraft.hammer.shift_down"));
+            tooltip.add(Text.literal(""));
+            tooltip.add(Text.translatable("tooltip.rustcraft.hammer.control_down1"));
+            tooltip.add(Text.translatable("tooltip.rustcraft.hammer.control_down2"));
+            tooltip.add(Text.translatable("tooltip.rustcraft.hammer.control_down3"));
+            tooltip.add(Text.literal(""));
+        } else {
+            tooltip.add(Text.translatable("tooltip.rustcraft.tool.default_shift"));
+            tooltip.add(Text.translatable("tooltip.rustcraft.tool.default_control"));
+        }
         super.appendTooltip(stack, context, tooltip, type);
     }
 
@@ -99,19 +123,22 @@ public class HammerItem extends Item {
                             removeWall(world, context, clickedBlock, player, side);
                     } else {
                         playSound(world, player, SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR);
-//                        player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 5, 1);
                         player.sendMessage(Text.translatable("text.rustcraft.cant_remove"), true);
                     }
-                } else if (UPGRADE_CENTER_BLOCKS_MAP.containsKey(clickedBlock)) {
-                    if (side.equals(Direction.EAST) || side.equals(Direction.WEST)
-                            || side.equals(Direction.NORTH) || side.equals(Direction.SOUTH))
-                        upgradeWall(world, context, clickedBlock, player, side);
-                    else
-                        upgradeFloor(world, context, clickedBlock, player);
+                } else if (!clickedBlock.equals(ModBlocks.HIGH_QUALITY_METAL_BUILDING_BLOCK_CENTER)) {
+                    if (UPGRADE_CENTER_BLOCKS_MAP.containsKey(clickedBlock)) {
+                        if (side.equals(Direction.EAST) || side.equals(Direction.WEST)
+                                || side.equals(Direction.NORTH) || side.equals(Direction.SOUTH))
+                            upgradeWall(world, context, clickedBlock, player, side);
+                        else
+                            upgradeFloor(world, context, clickedBlock, player);
+                    } else {
+                        playSound(world, player, SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR);
+                        player.sendMessage(Text.translatable("text.rustcraft.cant_use"), true);
+                    }
                 } else {
                     playSound(world, player, SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR);
-//                    player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 5, 1);
-                    player.sendMessage(Text.translatable("text.rustcraft.cant_use"), true);
+                    player.sendMessage(Text.translatable("text.rustcraft.max_out"), true);
                 }
             }
         }
@@ -188,10 +215,8 @@ public class HammerItem extends Item {
                     }
                     world.setBlockState(context.getBlockPos(), UPGRADE_CENTER_BLOCKS_MAP.get(clickedBlock).getDefaultState());
                     playSound(world, player, UPGRADE_SOUND_MAP.get(clickedBlock));
-//                    player.playSoundToPlayer(UPGRADE_SOUND_MAP.get(clickedBlock), SoundCategory.BLOCKS, 20, 1);
                 } else  {
                     playSound(world, player, SoundEvents.UI_STONECUTTER_TAKE_RESULT);
-//                    player.playSoundToPlayer(SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundCategory.BLOCKS, 20, 1);
                     player.sendMessage(Text.translatable("text.rustcraft.not_enough_resources"), true);
                 }
                 if (k > 0 && !success){
@@ -250,10 +275,8 @@ public class HammerItem extends Item {
                     }
                     world.setBlockState(context.getBlockPos(), UPGRADE_CENTER_BLOCKS_MAP.get(clickedBlock).getDefaultState());
                     playSound(world, player, UPGRADE_SOUND_MAP.get(clickedBlock));
-//                    player.playSoundToPlayer(UPGRADE_SOUND_MAP.get(clickedBlock), SoundCategory.BLOCKS, 20, 1);
                 } else  {
                     playSound(world, player, SoundEvents.UI_STONECUTTER_TAKE_RESULT);
-//                    player.playSoundToPlayer(SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundCategory.BLOCKS, 20, 1);
                     player.sendMessage(Text.translatable("text.rustcraft.not_enough_resources"), true);
                 }
                 if (k > 0 && !success){
@@ -297,7 +320,6 @@ public class HammerItem extends Item {
         for (int n = 0; n < removed; n++)
             player.getInventory().offerOrDrop(ModItems.WOOD.getDefaultStack());
         playSound(world, player, SoundEvents.BLOCK_LADDER_STEP);
-//        player.playSoundToPlayer(SoundEvents.BLOCK_LADDER_STEP, SoundCategory.BLOCKS, 20, 1);
     }
 
     private void removeWall(World world, ItemUsageContext context, Block clickedBlock, ServerPlayerEntity player, Direction side) {
@@ -340,7 +362,6 @@ public class HammerItem extends Item {
             for (int i = 0; i < removed; i++)
                 player.getInventory().offerOrDrop(ModItems.WOOD.getDefaultStack());
             playSound(world, player, SoundEvents.BLOCK_LADDER_STEP);
-//            player.playSoundToPlayer(SoundEvents.BLOCK_LADDER_STEP, SoundCategory.BLOCKS, 20, 1);
         }
     }
 

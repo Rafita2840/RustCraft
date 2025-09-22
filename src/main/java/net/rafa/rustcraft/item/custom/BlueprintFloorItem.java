@@ -2,10 +2,12 @@ package net.rafa.rustcraft.item.custom;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
@@ -18,6 +20,7 @@ import net.minecraft.world.World;
 import net.rafa.rustcraft.block.ModBlocks;
 import net.rafa.rustcraft.item.ModItems;
 
+import java.util.List;
 import java.util.Set;
 
 public class BlueprintFloorItem extends Item {
@@ -45,6 +48,44 @@ public class BlueprintFloorItem extends Item {
 
     public BlueprintFloorItem(Settings settings) {
         super(settings);
+    }
+
+    @Override
+    public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
+        boolean hasShift = Screen.hasShiftDown();
+        boolean hasControl = Screen.hasControlDown();
+        if (hasShift && !hasControl) {
+            tooltip.add(Text.translatable("tooltip.rustcraft.tool.holding_shift"));
+            tooltip.add(Text.translatable("tooltip.rustcraft.tool.default_control"));
+            tooltip.add(Text.literal(""));
+            tooltip.add(Text.translatable("tooltip.rustcraft.blueprint_floor.shift_down"));
+            tooltip.add(Text.literal(""));
+        } else if (!hasShift && hasControl) {
+            tooltip.add(Text.translatable("tooltip.rustcraft.tool.default_shift"));
+            tooltip.add(Text.translatable("tooltip.rustcraft.tool.holding_control"));
+            tooltip.add(Text.literal(""));
+            tooltip.add(Text.translatable("tooltip.rustcraft.blueprint_floor.control_down1"));
+            tooltip.add(Text.translatable("tooltip.rustcraft.blueprint_floor.control_down2"));
+            tooltip.add(Text.translatable("tooltip.rustcraft.blueprint.control_down1"));
+            tooltip.add(Text.translatable("tooltip.rustcraft.blueprint.control_down2"));
+            tooltip.add(Text.literal(""));
+        }
+        else if (hasShift){
+            tooltip.add(Text.translatable("tooltip.rustcraft.tool.holding_shift"));
+            tooltip.add(Text.translatable("tooltip.rustcraft.tool.holding_control"));
+            tooltip.add(Text.literal(""));
+            tooltip.add(Text.translatable("tooltip.rustcraft.blueprint_floor.shift_down"));
+            tooltip.add(Text.literal(""));
+            tooltip.add(Text.translatable("tooltip.rustcraft.blueprint_floor.control_down1"));
+            tooltip.add(Text.translatable("tooltip.rustcraft.blueprint_floor.control_down2"));
+            tooltip.add(Text.translatable("tooltip.rustcraft.blueprint.control_down1"));
+            tooltip.add(Text.translatable("tooltip.rustcraft.blueprint.control_down2"));
+            tooltip.add(Text.literal(""));
+        } else {
+            tooltip.add(Text.translatable("tooltip.rustcraft.tool.default_shift"));
+            tooltip.add(Text.translatable("tooltip.rustcraft.tool.default_control"));
+        }
+        super.appendTooltip(stack, context, tooltip, type);
     }
 
     @Override
@@ -132,18 +173,15 @@ public class BlueprintFloorItem extends Item {
                     }
                     if (isSurfaceBuildable && isOnGrid && !isOverlapping) {
                         placeFloor(world, context, amount);
-                    } else if (!isOnGrid && isSurfaceBuildable && !isOverlapping){
+                    } else if (!isOnGrid && isSurfaceBuildable && !isOverlapping) {
                         playSound(world, player, SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR);
-//                        player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 5, 1);
                         player.sendMessage(Text.translatable("text.rustcraft.off_grid"), true);
                     } else {
                         playSound(world, player, SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR);
-//                        player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 5, 1);
                         player.sendMessage(Text.translatable("text.rustcraft.non_buildable_surface"), true);
                     }
                 } else {
                     playSound(world, player, SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR);
-//                    player.playSoundToPlayer(SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, SoundCategory.BLOCKS, 5, 1);
                     player.sendMessage(Text.translatable("text.rustcraft.non_buildable_surface"), true);
                 }
             }
@@ -186,10 +224,8 @@ public class BlueprintFloorItem extends Item {
                     }
                     world.setBlockState(context.getBlockPos().add(0, 1, 0), ModBlocks.WOODEN_BUILDING_BLOCK_CENTER.getDefaultState());
                     playSound(world, player, SoundEvents.ENTITY_VILLAGER_WORK_FLETCHER);
-//                    player.playSoundToPlayer(SoundEvents.ENTITY_VILLAGER_WORK_FLETCHER, SoundCategory.BLOCKS, 20, 1);
                 } else  {
                     playSound(world, player, SoundEvents.UI_STONECUTTER_TAKE_RESULT);
-//                    player.playSoundToPlayer(SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundCategory.BLOCKS, 20, 1);
                     player.sendMessage(Text.translatable("text.rustcraft.not_enough_resources"), true);
                 }
                 if (k > 0 && !success){

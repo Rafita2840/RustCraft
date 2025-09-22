@@ -41,8 +41,28 @@
   "group.rustcraft.rustcraft_blocks": "RustCraft Blocks",
 
   "text.rustcraft.cant_use": "§cCan't use!",
+  "text.rustcraft.cant_place_wall": "§cCan't place wall in this position!",
   "text.rustcraft.cant_remove": "§cCan't remove building!",
   "text.rustcraft.non_buildable_surface": "§cNon buildable surface!",
   "text.rustcraft.off_grid": "§cOff grid!",
-  "text.rustcraft.not_enough_resources": "§cNot enough resources!"
+  "text.rustcraft.not_enough_resources": "§cNot enough resources!",
+  "text.rustcraft.max_out": "§cMaxed out building!",
+
+  "tooltip.rustcraft.blueprint.control_down1": "§3Sneak + R-Click:",
+  "tooltip.rustcraft.blueprint.control_down2": " §7Switches blueprints.",
+
+  "tooltip.rustcraft.blueprint_floor.shift_down": "§7Builds floors.",
+  "tooltip.rustcraft.blueprint_floor.control_down1": "§3R-Click on a buildable surface:",
+  "tooltip.rustcraft.blueprint_floor.control_down2": " §7Builds floor, requires Wood.",
+
+  "tooltip.rustcraft.hammer.shift_down": "§7Upgrades buildings and removes them.",
+  "tooltip.rustcraft.hammer.control_down1": "§3R-Click on a Center Building Block:",
+  "tooltip.rustcraft.hammer.control_down2": " §7Upgrades the building, requires materials.",
+  "tooltip.rustcraft.hammer.control_down3": " §7If Sneaking removes wooden buildings.",
+
+  "tooltip.rustcraft.tool.default_shift": "§6Hold §eShift §6for information",
+  "tooltip.rustcraft.tool.holding_shift": "§6Hold §fShift §6for information",
+  "tooltip.rustcraft.tool.default_control": "§6Hold §bControl §6for controls",
+  "tooltip.rustcraft.tool.holding_control": "§6Hold §fControl §6for controls"
+
 }
