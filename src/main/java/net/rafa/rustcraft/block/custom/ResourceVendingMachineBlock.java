@@ -1,10 +1,8 @@
 package net.rafa.rustcraft.block.custom;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.HorizontalFacingBlock;
-import net.minecraft.block.ShapeContext;
+import net.minecraft.block.*;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -14,7 +12,9 @@ import net.minecraft.screen.MerchantScreenHandler;
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.StateManager;
+import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.EnumProperty;
+import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.hit.BlockHitResult;
@@ -25,14 +25,16 @@ import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.village.Merchant;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
+import net.rafa.rustcraft.block.entity.custom.ResourceVendingMachineBlockEntity;
 import net.rafa.rustcraft.merchant.BaseVendingMachineMerchant;
 import net.rafa.rustcraft.merchant.TradeUtil;
 import org.jetbrains.annotations.Nullable;
 
-public class ResourceVendingMachineBlock extends HorizontalFacingBlock {
+public class ResourceVendingMachineBlock extends BlockWithEntity implements BlockEntityProvider {
 
     public static final EnumProperty<DoubleBlockHalf> HALF = EnumProperty.of("half", DoubleBlockHalf.class);
     public static final MapCodec<ResourceVendingMachineBlock> CODEC = createCodec(ResourceVendingMachineBlock::new);
+    public static final DirectionProperty FACING = Properties.FACING;
 
     public ResourceVendingMachineBlock(Settings settings) {
         super(settings);
@@ -62,7 +64,7 @@ public class ResourceVendingMachineBlock extends HorizontalFacingBlock {
     }
 
     @Override
-    protected MapCodec<? extends HorizontalFacingBlock> getCodec() {
+    protected MapCodec<ResourceVendingMachineBlock> getCodec() {
         return CODEC;
     }
 
@@ -110,5 +112,15 @@ public class ResourceVendingMachineBlock extends HorizontalFacingBlock {
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
         builder.add(FACING, HALF);
+    }
+
+    @Override
+    protected BlockRenderType getRenderType(BlockState state) {
+        return BlockRenderType.MODEL;
+    }
+
+    @Override
+    public @Nullable BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+        return new ResourceVendingMachineBlockEntity(pos, state);
     }
 }
