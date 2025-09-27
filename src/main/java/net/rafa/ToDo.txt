@@ -1,5 +1,6 @@
 TODO
 -Barrels
+-Vending machines
 -Barrel resources
 -Boxes (military... etc)
 -Hemp plant
@@ -12,7 +13,7 @@ TODO
 -Clothes
 -Effects (radiation -> custom biome to receive radiation, bleeding, freezing -> minecraft default)
 -> property to add radiation and cold protection
--Thirst bar -> saturation and thirst as nbt data for start tick if player
++Thirst bar -> saturation and thirst as nbt data for start tick if player
                 is still add 1
                 is moving add 2    ----> horizontal speed?
                 is running add 7
@@ -23,3 +24,4 @@ TODO
 -Drinkable water (fluid)
 -Force gamma to be low
 -BodiesBodies mod
+-Hold my items mod
