@@ -2,6 +2,7 @@ package net.rafa.rustcraft.merchant;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.packet.s2c.play.SetTradeOffersS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
@@ -92,7 +93,23 @@ public class BaseVendingMachineMerchant implements Merchant {
     @Override
     public void sendOffers(PlayerEntity player, Text text, int levelProgress) {
         player.openHandledScreen(new SimpleNamedScreenHandlerFactory(
-                (syncId, inv, p) -> new MerchantScreenHandler(syncId, inv, this),
+                (syncId, inv, p) -> {
+                    MerchantScreenHandler handler = new MerchantScreenHandler(syncId, inv, this);
+                    // After opening, sync the offers
+                    if (p instanceof ServerPlayerEntity serverPlayer) {
+                        serverPlayer.networkHandler.sendPacket(
+                                new SetTradeOffersS2CPacket(
+                                        handler.syncId,
+                                        this.getOffers(),
+                                        levelProgress,
+                                        this.getExperience(),
+                                        this.isLeveledMerchant(),
+                                        false
+                                )
+                        );
+                    }
+                    return handler;
+                },
                 text
         ));
     }

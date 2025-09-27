@@ -10,11 +10,15 @@ import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.screen.MerchantScreenHandler;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.rafa.rustcraft.block.entity.ModBlockEntities;
+import net.rafa.rustcraft.merchant.BaseVendingMachineMerchant;
+import net.rafa.rustcraft.merchant.TradeUtil;
+import net.rafa.rustcraft.screen.custom.ResourceVendingMachineScreenHandler;
 import org.jetbrains.annotations.Nullable;
 
 public class ResourceVendingMachineBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory<BlockPos> {
@@ -25,7 +29,7 @@ public class ResourceVendingMachineBlockEntity extends BlockEntity implements Ex
 
     @Override
     public BlockPos getScreenOpeningData(ServerPlayerEntity serverPlayerEntity) {
-        return null;
+        return this.pos;
     }
 
     @Override
@@ -35,7 +39,7 @@ public class ResourceVendingMachineBlockEntity extends BlockEntity implements Ex
 
     @Override
     public @Nullable ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
-        return null;
+        return new ResourceVendingMachineScreenHandler(syncId, playerInventory, pos);
     }
 
     @Override

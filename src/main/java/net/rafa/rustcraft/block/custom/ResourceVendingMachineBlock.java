@@ -8,7 +8,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.screen.MerchantScreenHandler;
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.StateManager;
@@ -28,6 +27,7 @@ import net.minecraft.world.World;
 import net.rafa.rustcraft.block.entity.custom.ResourceVendingMachineBlockEntity;
 import net.rafa.rustcraft.merchant.BaseVendingMachineMerchant;
 import net.rafa.rustcraft.merchant.TradeUtil;
+import net.rafa.rustcraft.screen.custom.ResourceVendingMachineScreenHandler;
 import org.jetbrains.annotations.Nullable;
 
 public class ResourceVendingMachineBlock extends BlockWithEntity implements BlockEntityProvider {
@@ -102,9 +102,12 @@ public class ResourceVendingMachineBlock extends BlockWithEntity implements Bloc
 
     @Override
     protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (!world.isClient) {
-            BaseVendingMachineMerchant merchant = new BaseVendingMachineMerchant((ServerPlayerEntity) player, TradeUtil.getResourcesTradeOffers());
-            merchant.sendOffers(player, Text.of("Resource Vending Machine"), merchant.getLevelProgress());
+        if (world.getBlockEntity(pos) instanceof ResourceVendingMachineBlockEntity resourceVendingMachineBlockEntity) {
+            if (!world.isClient) {
+                BaseVendingMachineMerchant merchant = new BaseVendingMachineMerchant(((ServerPlayerEntity) player), TradeUtil.getResourcesTradeOffers());
+                merchant.setCustomer(player);
+                merchant.sendOffers(player, Text.literal("a"), merchant.getLevelProgress());
+            }
         }
         return ActionResult.SUCCESS;
     }
