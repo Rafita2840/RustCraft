@@ -104,9 +104,7 @@ public class ResourceVendingMachineBlock extends BlockWithEntity implements Bloc
     protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
         if (world.getBlockEntity(pos) instanceof ResourceVendingMachineBlockEntity resourceVendingMachineBlockEntity) {
             if (!world.isClient) {
-                BaseVendingMachineMerchant merchant = new BaseVendingMachineMerchant(((ServerPlayerEntity) player), TradeUtil.getResourcesTradeOffers());
-                merchant.setCustomer(player);
-                merchant.sendOffers(player, Text.literal("a"), merchant.getLevelProgress());
+                player.openHandledScreen(resourceVendingMachineBlockEntity);
             }
         }
         return ActionResult.SUCCESS;

@@ -20,14 +20,11 @@ public class ResourceVendingMachineScreenHandler extends ScreenHandler {
     private final Merchant merchant;
     private final MerchantInventory merchantInventory;
 
-    public ResourceVendingMachineScreenHandler(int syncId, PlayerInventory playerInventory, BlockPos pos) {
-        this(syncId, playerInventory, playerInventory.player.getWorld().getBlockEntity(pos));
-    }
-
-    protected ResourceVendingMachineScreenHandler(int syncId, PlayerInventory playerInventory, BlockEntity blockEntity) {
+    public ResourceVendingMachineScreenHandler(int syncId, PlayerInventory playerInventory, Merchant merchant) {
         super(ModScreenHandlers.RVM_SCREEN_HANDLER, syncId);
-        this.merchant = new BaseVendingMachineMerchant((ServerPlayerEntity) playerInventory.player,
-                TradeUtil.getResourcesTradeOffers()) ;
+        this.merchant = merchant;
+//                new BaseVendingMachineMerchant((ServerPlayerEntity) playerInventory.player,
+//                TradeUtil.getResourcesTradeOffers()) ;
         this.merchantInventory = new MerchantInventory(merchant);
         this.addSlot(new Slot(this.merchantInventory, 0, 136, 37));
         this.addSlot(new Slot(this.merchantInventory, 1, 162, 37));
