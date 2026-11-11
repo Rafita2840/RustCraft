@@ -2,7 +2,6 @@ package net.rafa.rustcraft.item.custom;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -18,6 +17,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import net.rafa.rustcraft.block.ModBlocks;
+import net.rafa.rustcraft.util.TooltipKeys;
 import net.rafa.rustcraft.item.ModItems;
 
 import java.util.List;
@@ -52,8 +52,8 @@ public class BlueprintFloorItem extends Item {
 
     @Override
     public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
-        boolean hasShift = Screen.hasShiftDown();
-        boolean hasControl = Screen.hasControlDown();
+        boolean hasShift = TooltipKeys.shiftDown();
+        boolean hasControl = TooltipKeys.controlDown();
         if (hasShift && !hasControl) {
             tooltip.add(Text.translatable("tooltip.rustcraft.tool.holding_shift"));
             tooltip.add(Text.translatable("tooltip.rustcraft.tool.default_control"));

@@ -9,7 +9,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.rafa.rustcraft.RustCraft;
 import net.rafa.rustcraft.block.entity.vending.VendingMachineTrade;
-import net.rafa.rustcraft.networking.VendingTradePacket;
+import net.rafa.rustcraft.client.network.ClientPackets;
 
 import java.util.List;
 
@@ -102,7 +102,7 @@ public class VendingMachineScreen extends HandledScreen<VendingMachineScreenHand
         int relY = (int) mouseY - y;
         for (int i = 0; i < trades.size(); i++) {
             if (isOverBtn(relX, relY, i)) {
-                VendingTradePacket.send(i);
+                ClientPackets.sendVendingTrade(i);
                 return true;
             }
         }

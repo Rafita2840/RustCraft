@@ -1,7 +1,6 @@
 package net.rafa.rustcraft.networking;
 
 
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.PacketByteBuf;
@@ -58,15 +57,4 @@ public record VendingTradePacket(int tradeIndex) implements CustomPayload {
             });
         });
     }
-
-    // ── Client side: send packet ────────────────────────────────────
-
-    /**
-     * Send this packet from the client when BUY is clicked.
-     * Call from VendingMachineScreen.
-     */
-    public static void send(int tradeIndex) {
-        ClientPlayNetworking.send(new VendingTradePacket(tradeIndex));
-    }
 }
-
