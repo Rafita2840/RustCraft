@@ -14,7 +14,7 @@ import net.minecraft.util.math.intprovider.UniformIntProvider;
 import net.rafa.rustcraft.RustCraft;
 import net.rafa.rustcraft.block.custom.CrateBlock;
 import net.rafa.rustcraft.block.custom.DrinkableBlock;
-import net.rafa.rustcraft.block.custom.ResourceVendingMachineBlock;
+import net.rafa.rustcraft.block.custom.VendingMachineBlock;
 
 public class ModBlocks {
 
@@ -101,7 +101,7 @@ public class ModBlocks {
                     .sounds(BlockSoundGroup.METAL)
     ));
 
-    public static final Block RESOURCE_VENDING_MACHINE_BLOCK = registerBlock("resource_vending_machine_block", new ResourceVendingMachineBlock(
+    public static final Block VENDING_MACHINE = registerBlock("vending_machine", new VendingMachineBlock(
             AbstractBlock.Settings.create()
                     .strength(-1)
                     .requiresTool()

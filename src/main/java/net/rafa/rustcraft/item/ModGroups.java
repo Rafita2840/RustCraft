@@ -48,7 +48,7 @@ public class ModGroups {
                         entries.add(ModBlocks.METAL_BUILDING_BLOCK_CENTER);
                         entries.add(ModBlocks.HIGH_QUALITY_METAL_BUILDING_BLOCK);
                         entries.add(ModBlocks.HIGH_QUALITY_METAL_BUILDING_BLOCK_CENTER);
-                        entries.add(ModBlocks.RESOURCE_VENDING_MACHINE_BLOCK);
+                        entries.add(ModBlocks.VENDING_MACHINE);
                         entries.add(ModBlocks.BUILDABLE_GRASS_BLOCK);
                         entries.add(ModBlocks.BUILDABLE_SAND_BLOCK);
                         entries.add(ModBlocks.DRINKABLE_BLOCK);

@@ -1,4 +1,9 @@
 TODO
+
+-Make DataGen for everything instead of doing manual .json files
+
+-Resources (what's not already in vanilla)
+-Building mechanics (grid)
 -Barrels
 -Vending machines
 -Barrel resources
@@ -10,8 +15,11 @@ TODO
 -Doors with cards
 -Doors with keypad
 -Tools
--Clothes
--Effects (radiation -> custom biome to receive radiation, bleeding, freezing -> minecraft default)
+-Clothing
+-Food (what's not already in vanilla)
+-Components
+-Bandages and Syringe
+-Effects (radiation -> custom biome to receive radiation; bleeding -> when shot; freezing -> minecraft default)
 -> property to add radiation and cold protection
 +Thirst bar -> saturation and thirst as nbt data for start tick if player
                 is still add 1
@@ -21,7 +29,14 @@ TODO
                 -> max total 12
                 -> saturation to decrease thirst
 -Guns (pain in the ass)
+-Ammunition
 -Drinkable water (fluid)
 -Force gamma to be low
--BodiesBodies mod
--Hold my items mod
+
+Add something like:
+    -BodiesBodies mod
+    -Hold my items mod
+
+
+Future:
+-Spawn mechanic (chose beds or spawn on the shore)

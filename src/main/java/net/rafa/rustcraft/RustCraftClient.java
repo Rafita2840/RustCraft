@@ -10,8 +10,7 @@ import net.rafa.rustcraft.networking.ThirstSaturationSyncS2CPayload;
 import net.rafa.rustcraft.networking.ThirstSyncS2CPayload;
 import net.rafa.rustcraft.screen.ModScreenHandlers;
 import net.rafa.rustcraft.screen.custom.DefaultCrateScreen;
-import net.rafa.rustcraft.screen.custom.DefaultVendingMachineScreen;
-import net.rafa.rustcraft.screen.custom.ResourceVendingMachineScreenHandler;
+import net.rafa.rustcraft.screen.custom.VendingMachineScreen;
 import net.rafa.rustcraft.util.IEntityDataSaver;
 
 public class RustCraftClient implements ClientModInitializer {
@@ -38,6 +37,6 @@ public class RustCraftClient implements ClientModInitializer {
                     });
                 }));
         HandledScreens.register(ModScreenHandlers.CRATE_SCREEN_HANDLER, DefaultCrateScreen::new);
-        HandledScreens.register(ModScreenHandlers.RVM_SCREEN_HANDLER, DefaultVendingMachineScreen<ResourceVendingMachineScreenHandler>::new);
+        HandledScreens.register(ModScreenHandlers.VENDING_MACHINE_SCREEN_HANDLER, VendingMachineScreen::new);
     }
 }

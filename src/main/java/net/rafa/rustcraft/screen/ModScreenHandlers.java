@@ -3,12 +3,13 @@ package net.rafa.rustcraft.screen;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.resource.featuretoggle.FeatureFlags;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.rafa.rustcraft.RustCraft;
 import net.rafa.rustcraft.screen.custom.DefaultCrateScreenHandler;
-import net.rafa.rustcraft.screen.custom.ResourceVendingMachineScreenHandler;
+import net.rafa.rustcraft.screen.custom.VendingMachineScreenHandler;
 
 public class ModScreenHandlers {
 
@@ -16,9 +17,17 @@ public class ModScreenHandlers {
             Registry.register(Registries.SCREEN_HANDLER, Identifier.of(RustCraft.MOD_ID, "crate_screen_handler"),
                     new ExtendedScreenHandlerType<>(DefaultCrateScreenHandler::new, BlockPos.PACKET_CODEC));
 
-    public static final ScreenHandlerType<ResourceVendingMachineScreenHandler> RVM_SCREEN_HANDLER =
-            Registry.register(Registries.SCREEN_HANDLER, Identifier.of(RustCraft.MOD_ID, "rvm_screen_handler"),
-                    new ExtendedScreenHandlerType<>(ResourceVendingMachineScreenHandler::new, BlockPos.PACKET_CODEC));
+    public static final ScreenHandlerType<VendingMachineScreenHandler> VENDING_MACHINE_SCREEN_HANDLER =
+            Registry.register(
+                    Registries.SCREEN_HANDLER,
+                    Identifier.of(RustCraft.MOD_ID, "vending_machine"),
+                    // ExtendedScreenHandlerType sends extra data (the trades) when the screen opens
+                    new ExtendedScreenHandlerType<>(
+                            VendingMachineScreenHandler::new,   // (syncId, playerInv, buf) -> handler
+                            (handler, buf) -> VendingMachineScreenHandler.writeTrades(buf, handler.getTrades())
+                    )
+            );
+
 
 
     public static void registerScreenHandlers(){

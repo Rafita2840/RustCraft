@@ -24,7 +24,7 @@
   "block.rustcraft.buildable_sand_block": "Buildable Sand Block",
   "block.rustcraft.sulfur_ore": "Sulfur Ore",
   "block.rustcraft.drinkable_block": "Drinkable Block",
-  "block.rustcraft.resource_vending_machine_block": "Resource Vending Machine",
+  "block.rustcraft.vending_machine": "Vending Machine",
   "block.rustcraft.crate": "Crate",
 
   "block.rustcraft.wooden_building_block_center": "Center Wooden Building Block",
@@ -63,6 +63,10 @@
   "tooltip.rustcraft.tool.default_shift": "§6Hold §eShift §6for information",
   "tooltip.rustcraft.tool.holding_shift": "§6Hold §fShift §6for information",
   "tooltip.rustcraft.tool.default_control": "§6Hold §bControl §6for controls",
-  "tooltip.rustcraft.tool.holding_control": "§6Hold §fControl §6for controls"
+  "tooltip.rustcraft.tool.holding_control": "§6Hold §fControl §6for controls",
+
+  "gui.rustcraft.vending_machine.buy": "BUY",
+  "gui.rustcraft.vending_machine.out_of_stock": "Out of stock",
+  "gui.rustcraft.vending_machine.insufficient_funds": "Not enough items"
 
 }

@@ -13,6 +13,7 @@ import net.rafa.rustcraft.item.ModGroups;
 import net.rafa.rustcraft.item.ModItems;
 import net.rafa.rustcraft.networking.ThirstSaturationSyncS2CPayload;
 import net.rafa.rustcraft.networking.ThirstSyncS2CPayload;
+import net.rafa.rustcraft.networking.VendingTradePacket;
 import net.rafa.rustcraft.screen.ModScreenHandlers;
 import net.rafa.rustcraft.util.IEntityDataSaver;
 import net.rafa.rustcraft.util.ThirstData;
@@ -32,6 +33,9 @@ public class RustCraft implements ModInitializer {
         ModScreenHandlers.registerScreenHandlers();
 
         ServerTickEvents.START_SERVER_TICK.register(new PlayerTickHandler());
+
+        VendingTradePacket.registerPayload();
+        VendingTradePacket.registerReceiver();
 
         PayloadTypeRegistry.playS2C().register(ThirstSyncS2CPayload.PAYLOAD_ID, ThirstSyncS2CPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(ThirstSaturationSyncS2CPayload.PAYLOAD_ID, ThirstSaturationSyncS2CPayload.CODEC);
