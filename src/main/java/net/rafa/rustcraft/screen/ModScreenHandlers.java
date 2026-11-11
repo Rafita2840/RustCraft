@@ -8,6 +8,7 @@ import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.rafa.rustcraft.RustCraft;
+import net.rafa.rustcraft.block.entity.vending.VendingMachineTrade;
 import net.rafa.rustcraft.screen.custom.DefaultCrateScreenHandler;
 import net.rafa.rustcraft.screen.custom.VendingMachineScreenHandler;
 
@@ -21,10 +22,10 @@ public class ModScreenHandlers {
             Registry.register(
                     Registries.SCREEN_HANDLER,
                     Identifier.of(RustCraft.MOD_ID, "vending_machine"),
-                    // ExtendedScreenHandlerType sends extra data (the trades) when the screen opens
+                    // ExtendedScreenHandlerType sends the trades to the client when the screen opens
                     new ExtendedScreenHandlerType<>(
-                            VendingMachineScreenHandler::new,   // (syncId, playerInv, buf) -> handler
-                            (handler, buf) -> VendingMachineScreenHandler.writeTrades(buf, handler.getTrades())
+                            VendingMachineScreenHandler::new,   // (syncId, playerInv, trades) -> handler
+                            VendingMachineTrade.LIST_PACKET_CODEC
                     )
             );
 

@@ -4,14 +4,12 @@ package net.rafa.rustcraft.screen.custom;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.rafa.rustcraft.block.entity.custom.VendingMachineBlockEntity;
 import net.rafa.rustcraft.block.entity.vending.VendingMachineTrade;
 import net.rafa.rustcraft.screen.ModScreenHandlers;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class VendingMachineScreenHandler extends ScreenHandler {
@@ -42,39 +40,13 @@ public class VendingMachineScreenHandler extends ScreenHandler {
         addPlayerSlots(playerInv);
     }
 
-    // ── Client-side constructor (receives trade data over network) ─
+    // ── Client-side constructor (trades arrive via the screen-opening data) ─
     public VendingMachineScreenHandler(int syncId, PlayerInventory playerInv,
-                                       RegistryByteBuf buf) {
+                                       List<VendingMachineTrade> trades) {
         super(ModScreenHandlers.VENDING_MACHINE_SCREEN_HANDLER, syncId);
         this.blockEntity = null;
-        this.trades = readTrades(buf);
+        this.trades = trades;
         addPlayerSlots(playerInv);
-    }
-
-    // ── Serialise trades into the open-screen packet ───────────────
-    public static void writeTrades(RegistryByteBuf buf, List<VendingMachineTrade> trades) {
-        buf.writeInt(trades.size());
-        for (VendingMachineTrade t : trades) {
-            buf.writeRegistryValue(net.minecraft.registry.Registries.ITEM, t.inputItem());
-            buf.writeInt(t.inputCount());
-            buf.writeRegistryValue(net.minecraft.registry.Registries.ITEM, t.outputItem());
-            buf.writeInt(t.outputCount());
-        }
-    }
-
-    private static List<VendingMachineTrade> readTrades(RegistryByteBuf buf) {
-        int count = buf.readInt();
-        List<VendingMachineTrade> list = new ArrayList<>();
-        for (int i = 0; i < count; i++) {
-            net.minecraft.item.Item input  = buf.readRegistryValue(net.minecraft.registry.Registries.ITEM);
-            int inputCount  = buf.readInt();
-            net.minecraft.item.Item output = buf.readRegistryValue(net.minecraft.registry.Registries.ITEM);
-            int outputCount = buf.readInt();
-            if (input != null && output != null) {
-                list.add(new VendingMachineTrade(input, inputCount, output, outputCount));
-            }
-        }
-        return list;
     }
 
     // ── Player inventory slots ─────────────────────────────────────

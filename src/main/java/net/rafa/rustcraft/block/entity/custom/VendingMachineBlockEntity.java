@@ -2,6 +2,7 @@ package net.rafa.rustcraft.block.entity.custom;
 
 
 
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -15,7 +16,7 @@ import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.screen.NamedScreenHandlerFactory;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.text.Text;
 import net.minecraft.util.collection.DefaultedList;
@@ -41,7 +42,7 @@ import java.util.List;
  *  Example trades already included. Add/remove as needed.
  * ─────────────────────────────────────────────────────────────
  */
-public class VendingMachineBlockEntity extends BlockEntity implements NamedScreenHandlerFactory {
+public class VendingMachineBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory<List<VendingMachineTrade>> {
 
     // ── Inventory: slots for each trade's input stock ──────────────
     // One slot per trade to hold the input items stocked in the machine.
@@ -180,6 +181,11 @@ public class VendingMachineBlockEntity extends BlockEntity implements NamedScree
     }
 
     // ── Screen factory ─────────────────────────────────────────────
+
+    @Override
+    public List<VendingMachineTrade> getScreenOpeningData(ServerPlayerEntity player) {
+        return trades;
+    }
 
     @Override
     public Text getDisplayName() {
