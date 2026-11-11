@@ -23,6 +23,13 @@ jobs:
         run: chmod +x ./gradlew
       - name: build
         run: ./gradlew build
+      - name: boot dedicated server
+        run: |
+          mkdir -p run
+          echo "eula=true" > run/eula.txt
+          # start the server, send "stop" as soon as it reports "Done", fail if that never happens
+          timeout 600 bash -c '( while ! grep -q "Done (" server.log 2>/dev/null; do sleep 2; done; echo stop ) | ./gradlew runServer --console=plain > server.log 2>&1' || true
+          if ! grep -q "Done (" server.log; then tail -n 150 server.log; exit 1; fi
       - name: capture build artifacts
         uses: actions/upload-artifact@v4
         with:

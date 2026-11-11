@@ -18,6 +18,18 @@ repositories {
 	// for more information about repositories.
 }
 
+loom {
+	// Separate client and common code so client imports can't leak into the server
+	splitEnvironmentSourceSets()
+
+	mods {
+		"rustcraft" {
+			sourceSet sourceSets.main
+			sourceSet sourceSets.client
+		}
+	}
+}
+
 fabricApi {
 	configureDataGeneration {
 		client = true

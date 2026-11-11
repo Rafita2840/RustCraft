@@ -8,7 +8,7 @@
 ## How this audit was done
 
 - **Static review** of every file in `src/` (code, models, blockstates, lang, textures) against `docs/PLAN.md` §1.2. The "Code" column reflects this.
-- **Build / `runClient` / `runServer` / in-game tests** have **not** been run yet. They need a machine with Gradle access, so they are left to the "In-game" column and the checklist in the last section. Every ⬜ turns into ✅/⚠️/❌ once you have tested it.
+- **Build, `runClient`, `runServer` and in-game tests** were run by the project owner. Results are in the "In-game" column; ⬜ means not tested yet.
 
 ## Git state (P0.1 step 1)
 
@@ -45,7 +45,7 @@
 | **Thirst – networking** | ⚠️ | – | A saturation packet is sent **every tick per player**; the client never uses it | P0.6 |
 | **Creative tabs** | ⚠️ | ⬜ | 2 tabs, filled by hand; some items missing | P0.5 |
 | **DataGen** | ❌ | – | `RustCraftDataGenerator` is empty; everything is hand-written JSON | P0.4 |
-| **Dedicated server** | ❌ | ⬜ | Two common-code files import client classes (see below). Expected to crash on `runServer` | P0.3 |
+| **Dedicated server** | ✅ | ✅ `runServer` boots | Client imports were removed from common code in P0.3 (CI boot step still to be added by hand) | P0.3 |
 
 ## Problems (PLAN §1.2) – verified against the code
 
@@ -91,29 +91,17 @@
 | `fabric.mod.json` | `~1.21`, template `suggests`, fabricmc.net homepage | `~1.21.1`, `suggests` removed, GitHub homepage |
 | Gradle memory | `-Xmx1G` | `-Xmx2G` |
 
-Still to do by hand: `git update-index --chmod=+x gradlew` (problem #19). Build result: ⬜ pending.
+Still to do by hand: `git update-index --chmod=+x gradlew` (problem #19). Build, `runClient` and `runServer`: ✅.
 
-## Manual checklist for P0.1 (needs you)
+## P0.3 – Client/server split (Nov 2026)
 
-Run these on your machine and update the "In-game" column above.
+- `build.gradle`: Loom `splitEnvironmentSourceSets()` plus the `mods { rustcraft { ... } }` block.
+- Moved to `src/client/java` (same packages): `RustCraftClient`, `client/ThirstHudOverlay`, `screen/custom/DefaultCrateScreen`, `screen/custom/VendingMachineScreen`.
+- New `client/network/ClientPackets` holds the client-side vending trade sender; `VendingTradePacket.send()` is removed (problem #1).
+- New common `util/TooltipKeys`: tooltips ask it for Shift/Control; `RustCraftClient` plugs in the real key checks, a dedicated server always gets `false` (problem #2).
+- CI (`build.yml`) now also boots a dedicated server and fails if it never reports `Done` (problem #22).
+- Result: ✅ `./gradlew build`, `runClient` and `runServer` all work. Pending: replace `.github/workflows/build.yml` by hand (protected file) so CI runs the server boot step.
 
-**Build and run**
-- [ ] `./gradlew build`: note any errors/warnings
-- [ ] `./gradlew runClient`: does it reach the title screen? Any errors in the log?
-- [ ] `./gradlew runServer` (accept the EULA in `run/eula.txt`): does it boot or crash? Expected: crash with a `net.minecraft.client` / `ClientPlayNetworking` error (problems 1 and 2)
+## P0.1 – Result
 
-**In-game, creative world** (flat world is easiest)
-- [ ] Both RustCraft creative tabs: list which items/blocks are missing, which have purple/black textures
-- [ ] Place every block (sulfur ore, buildable grass/sand, all building blocks, drinkable block, crate, vending machine)
-- [ ] Crate: open it, move items, break it, reopen
-- [ ] Vending machine: place, open, buy something, try with too few items
-- [ ] Get blueprint stairs/wall with `/give @s rustcraft:blueprint_wall` (they aren't in the tab) and check they work
-- [ ] Floor/wall/stairs: build on a buildable grass block, then off-grid and on a non-buildable surface; check the error messages
-- [ ] Hammer: upgrade wood→stone→metal→HQM (survival, with resources); sneak-click a wooden piece to remove it
-- [ ] Hazmat suit: wear all 4 pieces (does it render on the body?)
-- [ ] Thirst (survival): start value on a **new world** (expected 0), then stand still / walk / sprint / jump / swim for a minute each and watch the bar. Note whether it ever goes down
-- [ ] Thirst: die, respawn (expected 10), quit and rejoin
-- [ ] Thirst HUD: go underwater (does it overlap the bubbles?) and ride a horse
-- [ ] Drinkable block: sneak + right-click it. Does thirst rise?
-
-Send me the results (or just the failures) and I'll update this file and close P0.1.
+Done. Build, `runClient` and `runServer` run, the creative-mode checks were done in-game, and every problem has a task ID. Anything the checks did not cover stays ⬜ in the table above (for example the exact thirst drain and respawn values), to be measured when P1.1 starts.
