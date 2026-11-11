@@ -74,11 +74,24 @@
 | 16 | `drinkable_block` texture is missing | `textures/block/drinkable_block.png` | P0.4 |
 | 17 | `wooden_building_stairs` is registered but unused (blueprint places `OAK_STAIRS`) | `ModBlocks`, `BlueprintStairsItem` | P0.4 |
 | 18 | Vending machine models/textures still use the old `resource_vending_machine_block*` names | `models/block/vending_machine*.json` | P0.4 |
-| 19 | `gradlew` is not executable in git (mode 100644) | repo root | P0.2 |
-| 20 | `org.gradle.jvmargs=-Xmx1G` is low for Loom + datagen | `gradle.properties` | P0.2 |
-| 21 | `fabric.mod.json` still has template values (`homepage` fabricmc.net, `suggests: another-mod`) | `fabric.mod.json` | P0.2 |
+| 19 | `gradlew` is not executable in git (mode 100644) | repo root | P0.2 (needs the manual chmod below) |
+| 20 | `org.gradle.jvmargs=-Xmx1G` is low for Loom + datagen | `gradle.properties` | P0.2 ✅ (see below) |
+| 21 | `fabric.mod.json` still has template values (`homepage` fabricmc.net, `suggests: another-mod`) | `fabric.mod.json` | P0.2 ✅ (see below) |
 | 23 | **Project did not compile** (vending machine used non-existent `readRegistryValue`/`writeRegistryValue`, and a lambda where a `PacketCodec` is required). Fixed by making the block entity an `ExtendedScreenHandlerFactory` with a trade codec. Needs a re-run to confirm | `VendingMachineScreenHandler`, `ModScreenHandlers`, `VendingMachineBlockEntity`, `VendingMachineTrade` | P0.1 (fixed, unverified) |
 | 22 | CI only runs `./gradlew build`: no server boot, no datagen check | `.github/workflows/build.yml` | P0.3, P0.4 |
+
+## P0.2 – Version pin (Nov 2026)
+
+| Setting | Before | After |
+|---|---|---|
+| Minecraft | `1.21` | `1.21.1` |
+| Yarn | `1.21+build.9` | `1.21.1+build.3` |
+| Fabric API | `0.102.0+1.21` | `0.107.0+1.21.1` (can be bumped to the newest `+1.21.1` build) |
+| Loom | `1.11-SNAPSHOT` | `1.11.8` (stable) |
+| `fabric.mod.json` | `~1.21`, template `suggests`, fabricmc.net homepage | `~1.21.1`, `suggests` removed, GitHub homepage |
+| Gradle memory | `-Xmx1G` | `-Xmx2G` |
+
+Still to do by hand: `git update-index --chmod=+x gradlew` (problem #19). Build result: ⬜ pending.
 
 ## Manual checklist for P0.1 (needs you)
 

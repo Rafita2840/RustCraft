@@ -8,7 +8,7 @@
 		"Rafita2840"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
+		"homepage": "https://github.com/Rafita2840/RustCraft",
 		"sources": "https://github.com/Rafita2840/RustCraft"
 	},
 	"license": "MIT",
@@ -30,11 +30,8 @@
 	],
 	"depends": {
 		"fabricloader": ">=0.16.14",
-		"minecraft": "~1.21",
+		"minecraft": "~1.21.1",
 		"java": ">=21",
 		"fabric-api": "*"
-	},
-	"suggests": {
-		"another-mod": "*"
 	}
 }
