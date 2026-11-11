@@ -23,6 +23,11 @@ jobs:
         run: chmod +x ./gradlew
       - name: build
         run: ./gradlew build
+      - name: check generated data is up to date
+        run: |
+          ./gradlew runDatagen
+          git add -N src/main/generated
+          git diff --exit-code -- src/main/generated ':!src/main/generated/.cache'
       - name: boot dedicated server
         run: |
           mkdir -p run

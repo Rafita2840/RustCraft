@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "rustcraft:block/metal_building_block_center_top",
+    "side": "rustcraft:block/metal_building_block_center_side"
+  }
+}

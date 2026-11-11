@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=east,half=lower": {
+      "model": "rustcraft:block/vending_machine_lower",
+      "y": 90
+    },
+    "facing=east,half=upper": {
+      "model": "rustcraft:block/vending_machine_upper",
+      "y": 90
+    },
+    "facing=north,half=lower": {
+      "model": "rustcraft:block/vending_machine_lower"
+    },
+    "facing=north,half=upper": {
+      "model": "rustcraft:block/vending_machine_upper"
+    },
+    "facing=south,half=lower": {
+      "model": "rustcraft:block/vending_machine_lower",
+      "y": 180
+    },
+    "facing=south,half=upper": {
+      "model": "rustcraft:block/vending_machine_upper",
+      "y": 180
+    },
+    "facing=west,half=lower": {
+      "model": "rustcraft:block/vending_machine_lower",
+      "y": 270
+    },
+    "facing=west,half=upper": {
+      "model": "rustcraft:block/vending_machine_upper",
+      "y": 270
+    }
+  }
+}

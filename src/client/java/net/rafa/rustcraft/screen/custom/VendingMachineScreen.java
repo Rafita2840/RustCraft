@@ -32,7 +32,7 @@ public class VendingMachineScreen extends HandledScreen<VendingMachineScreenHand
 
 
     private static final Identifier TEXTURE =
-            Identifier.of(RustCraft.MOD_ID, "textures/gui/vending_machine.png");
+            Identifier.of(RustCraft.MOD_ID, "textures/gui/vending_machine/vending_machine_screen.png");
 
     private static final int TRADE_AREA_Y = VendingMachineScreenHandler.TRADE_AREA_Y;
     private static final int TRADE_ROW_H  = VendingMachineScreenHandler.TRADE_ROW_H;
@@ -140,7 +140,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 public class VendingMachineScreen extends HandledScreen<VendingMachineScreenHandler> {
-    private static final Identifier TEXTURE = Identifier.of(RustCraft.MOD_ID, "textures/gui/vending_machine_screen.png");
+    private static final Identifier TEXTURE = Identifier.of(RustCraft.MOD_ID, "textures/gui/vending_machine/vending_machine_screen.png");
     private static final int TRADE_LIST_X = 5;
     private static final int TRADE_LIST_Y = 16;
     private static final int TRADE_BUTTON_WIDTH = 99;

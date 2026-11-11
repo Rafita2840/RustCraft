@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_animal_fat": {
+      "conditions": {
+        "items": [
+          {
+            "items": "rustcraft:animal_fat"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "rustcraft:low_grade_fuel"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_animal_fat"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "rustcraft:low_grade_fuel"
+    ]
+  }
+}
