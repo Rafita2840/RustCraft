@@ -3,7 +3,6 @@ package net.rafa.rustcraft.block;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.ExperienceDroppingBlock;
-import net.minecraft.block.StairsBlock;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
@@ -46,12 +45,6 @@ public class ModBlocks {
                     .sounds(BlockSoundGroup.WOOD)
                     ));
     
-    public static final Block WOODEN_BUILDING_STAIRS = registerBlock("wooden_building_stairs", new StairsBlock(
-            ModBlocks.WOODEN_BUILDING_BLOCK.getDefaultState(), AbstractBlock.Settings.create()
-                    .strength(-1)
-                    .requiresTool()
-    ));
-
     public static final Block WOODEN_BUILDING_BLOCK_CENTER = registerBlock("wooden_building_block_center", new Block(
             AbstractBlock.Settings.create()
                     .strength(-1)

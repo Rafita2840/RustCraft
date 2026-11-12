@@ -105,3 +105,30 @@ Still to do by hand: `git update-index --chmod=+x gradlew` (problem #19). Build,
 ## P0.1 – Result
 
 Done. Build, `runClient` and `runServer` run, the creative-mode checks were done in-game, and every problem has a task ID. Anything the checks did not cover stays ⬜ in the table above (for example the exact thirst drain and respawn values), to be measured when P1.1 starts.
+
+## P0.4 – DataGen (in progress)
+
+**Step 1 (Nov 2026):** `RustCraftDataGenerator` registers `ModModelProvider` and `ModLangProvider` (package `net.rafa.rustcraft.datagen`).
+
+| Generated now | Still hand-written |
+|---|---|
+| Item models for all items, blockstates and models for sulfur ore, buildable grass/sand, drinkable block and the 8 building blocks, block item models, `en_us.json` (build fails if a block/item has no name) | Crate and vending machine (Blockbench models), `wooden_building_stairs`, loot tables, recipes, tags |
+
+Result: ✅ works.
+
+**Step 2 (Nov 2026):** added `ModBlockLootTableProvider` (sulfur ore), `ModRecipeProvider` (low grade fuel, now with an unlock advancement), `ModBlockTagProvider` (pickaxe/stone-tool tags plus new mod tags `building_blocks`, `center_building_blocks`, `buildable_surfaces`, not used by code until P4.1) and `util/ModTags`. Crate, vending machine and building blocks have no loot table because they are unbreakable.
+
+Result: ✅ works.
+
+**Step 3 (Nov 2026):**
+- Crate and vending machine blockstates are generated; their Blockbench models stay hand-made. Fixes #24 (vending machine block/item had no model).
+- Vending machine GUI texture path fixed in `VendingMachineScreen`. Fixes #25. Stock/trading (#26) is still open (P6.1).
+- `wooden_building_stairs` removed (it was unused, the blueprint places vanilla oak stairs). Fixes #17.
+- Legacy `§` colour codes removed from lang; colours are applied in code through `util/ModText`. Fixes #12.
+- New problem found and fixed: `text.rustcraft.cant_place_stairs` was used in code but had no lang entry (#27).
+- Added `README.md` (datagen workflow) and a CI step that re-runs datagen and fails if `src/main/generated` is stale.
+- Textures: hazmat suit item textures added by the project owner (#15). The drinkable block now uses the thirst droplet on a water-blue tile (#16).
+
+Result: ✅ works.
+
+**P0.4 is done.** Everything except the Blockbench models, textures and `fabric.mod.json` is generated.

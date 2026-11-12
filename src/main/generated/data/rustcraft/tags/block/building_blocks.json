@@ -1,0 +1,9 @@
+{
+  "values": [
+    "#rustcraft:center_building_blocks",
+    "rustcraft:wooden_building_block",
+    "rustcraft:stone_building_block",
+    "rustcraft:metal_building_block",
+    "rustcraft:high_quality_metal_building_block"
+  ]
+}

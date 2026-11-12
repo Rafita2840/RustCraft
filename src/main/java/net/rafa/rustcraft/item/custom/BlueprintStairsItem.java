@@ -21,6 +21,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import net.rafa.rustcraft.block.ModBlocks;
+import net.rafa.rustcraft.util.ModText;
 import net.rafa.rustcraft.item.ModItems;
 
 import java.util.Set;
@@ -72,15 +73,15 @@ public class BlueprintStairsItem extends Item {
                             placeStairs(world, player, facing);
                         } else {
                             playSound(world, player, SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR);
-                            player.sendMessage(Text.translatable("text.rustcraft.cant_place_stairs"), true);
+                            player.sendMessage(ModText.error("text.rustcraft.cant_place_stairs"), true);
                         }
                     } else {
                         playSound(world, player, SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR);
-                        player.sendMessage(Text.translatable("text.rustcraft.cant_place_stairs"), true);
+                        player.sendMessage(ModText.error("text.rustcraft.cant_place_stairs"), true);
                     }
                 } else {
                     playSound(world, player, SoundEvents.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR);
-                    player.sendMessage(Text.translatable("text.rustcraft.cant_use"), true);
+                    player.sendMessage(ModText.error("text.rustcraft.cant_use"), true);
                 }
             }
         }
@@ -159,7 +160,7 @@ public class BlueprintStairsItem extends Item {
                 }
                 else  {
                     playSound(world, player, SoundEvents.UI_STONECUTTER_TAKE_RESULT);
-                    player.sendMessage(Text.translatable("text.rustcraft.not_enough_resources"), true);
+                    player.sendMessage(ModText.error("text.rustcraft.not_enough_resources"), true);
                 }
                 if (k > 0 && !success){
                     for (int n = 0; n < k; n++){
