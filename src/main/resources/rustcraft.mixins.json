@@ -3,8 +3,6 @@
 	"package": "net.rafa.rustcraft.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
-        "ModEntityDataSaverMixin",
-        "ServerPlayerEntityMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

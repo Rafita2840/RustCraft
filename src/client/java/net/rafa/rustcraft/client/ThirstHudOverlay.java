@@ -8,7 +8,6 @@ import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.util.Identifier;
 import net.rafa.rustcraft.RustCraft;
-import net.rafa.rustcraft.util.IEntityDataSaver;
 
 public class ThirstHudOverlay implements HudRenderCallback {
 
@@ -47,7 +46,7 @@ public class ThirstHudOverlay implements HudRenderCallback {
             }
 
             RenderSystem.setShaderTexture(0, FILLED_THIRST);
-            int thirst = ((IEntityDataSaver) client.player).getPersistentData().getInt("thirst");
+            int thirst = ClientPlayerStats.thirst();
             float halfThirst = (float) thirst /2;
             thirst = thirst / 2;
             for (int i = 0; i < 10; i++) {

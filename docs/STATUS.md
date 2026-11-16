@@ -145,3 +145,15 @@ Result: ✅ works.
 **Left for later steps** (not worth creating empty until something uses them): `ModSounds`, `ModDamageTypes`, `ModEffects`, `ModComponents`, `ModEntities`, and the feature packages (`thirst`, `building`, `vending`…). Each is added by the first task that needs it (P1.x, P2.x, P4.x). Moving the existing classes into feature packages is better done together with P0.6 (thirst) and P4.1 (building).
 
 Result: ✅ client and datagen run fine.
+
+## P0.6 – Player data via Fabric attachments
+
+- New `data` package: `RustPlayerData` (record with codec: thirst + hidden thirst exhaustion), `ModAttachments.PLAYER_DATA` (persistent attachment, default = full thirst), `PlayerStats` (the only way to change stats on the server), `PlayerDataEvents` (join, death, dimension change).
+- Sync: one payload, `PlayerStatsSyncS2CPayload`, sent **only when the displayed thirst changes**, and on join, respawn and dimension change. The old per-tick saturation packet is gone (problem #4). The hidden exhaustion counter is saved but never sent.
+- Client: `ClientPlayerStats` holds the last received value (the client creates a new player entity on respawn and dimension change, so it is not stored on the entity). The HUD reads it.
+- Removed: `ModEntityDataSaverMixin` (was injected into every entity, problem #10), `ServerPlayerEntityMixin`, `IEntityDataSaver`, `ThirstData`, `ThirstSaturationData`, both old thirst payloads. `rustcraft.mixins.json` is now an empty list, ready for later tasks.
+- Behaviour changes: a new player now starts with **full thirst (20)** instead of 0 (part of problem #3); death still respawns with 10. Making these values configurable stays in P1.1. Drain speeds are unchanged.
+- Decision: old thirst data in existing test worlds is **not migrated** (the mod is unreleased); those players simply start with the default.
+- Fabric attachment auto-sync was not used because it is not confirmed for the 1.21.1 builds of Fabric API; the plan allows our own payload in that case.
+
+Result: ⬜ pending.

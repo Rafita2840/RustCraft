@@ -3,20 +3,14 @@ package net.rafa.rustcraft.event;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.rafa.rustcraft.util.IEntityDataSaver;
-import net.rafa.rustcraft.util.ThirstData;
-import net.rafa.rustcraft.util.ThirstSaturationData;
+import net.rafa.rustcraft.data.PlayerStats;
+import net.rafa.rustcraft.data.RustPlayerData;
 
 public class PlayerTickHandler implements ServerTickEvents.StartTick {
 
-
-
     @Override
     public void onStartTick(MinecraftServer server) {
-        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()){
+        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
             float speedVariation = player.horizontalSpeed - player.prevHorizontalSpeed;
             int amount = 1;
             if (speedVariation > 0f) {
@@ -28,18 +22,15 @@ public class PlayerTickHandler implements ServerTickEvents.StartTick {
             if (speedVariation > 0.20f) {
                 amount += 2;
             }
-            IEntityDataSaver dataPlayer = ((IEntityDataSaver) player);
-            if (ThirstSaturationData.addSaturation(dataPlayer, amount) == 5000) {
-                ThirstSaturationData.resetSaturation(dataPlayer);
-                ThirstData.removeThirst(dataPlayer, 1);
+
+            RustPlayerData data = PlayerStats.get(player);
+            int exhaustion = data.thirstExhaustion() + amount;
+            if (exhaustion >= RustPlayerData.THIRST_EXHAUSTION_LIMIT) {
+                PlayerStats.set(player, data.withThirst(data.thirst() - 1).withThirstExhaustion(0));
+            } else {
+                // Hidden counter: saved with the player but never sent to the client
+                PlayerStats.set(player, data.withThirstExhaustion(exhaustion));
             }
-//            player.sendMessage(Text.literal("Saturation " +
-//                                    ((IEntityDataSaver) player)
-//                                            .getPersistentData()
-//                                            .getInt("thirst_saturation"))
-//                            .fillStyle(Style.EMPTY
-//                                    .withColor(Formatting.AQUA)),
-//                    true);
         }
     }
 }

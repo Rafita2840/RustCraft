@@ -98,7 +98,7 @@ This is what already exists. P0.1 is to confirm and finish this audit, but most 
 
 - **M1 "Clean base"**: Phase 0 done. Everything is datagen'd and the dedicated server boots.
 - **M2 "Naked on the beach"**: P1.1–P1.4, P2.1–P2.6. You can survive (thirst, water, food), gather and craft basic tools.
-- **M3 "First base"**: Phase 4 core (P4.1–P4.7) + P3.1–P3.2. You can build a twig→stone base with a door and lock.
+- **M3 "First base"**: Phase 4 core (P4.1–P4.7, P4.12) + P3.1–P3.2. You can build a twig→stone base with a door and lock.
 - **M4 "Roaming"**: Phase 5 + P1.5–P1.8 + Phase 6. Barrels, crates, radiation, bear, vending machines, keycards.
 - **M5 "Pew pew"**: Phase 7. Guns, ammo, raiding.
 - **M6 "Feels like Rust"**: Phase 8 + 9.
@@ -459,10 +459,24 @@ The phases are not strictly sequential. Phase 2 and Phase 4 can run in parallel 
   2. Create `BuildingPieceType`: FOUNDATION, FLOOR, WALL, DOORWAY, WINDOW, WALL_FRAME, STAIRS, ROOF (more later). Each defines its **footprint** (relative positions of the edge blocks and the center) and **placement rules**.
   3. Create `BuildingGrid`: snapping math (the current 3-block cell with centers on a 3-grid relative to the first foundation). Store each base's grid origin in a `BuildingData` (block entity in the center block, or a chunk/world attachment) so separate bases don't need to share one global grid.
   4. Create `InventoryUtil.consume(player, item, count)` / `has(…)` / `refund(...)` to replace the manual slot loops (fixes problem #11). Creative players don't consume anything.
-  5. Merge the blueprints into one **Building Plan** item with a selected piece (sneak + right-click or a radial menu to switch, as the current tooltip already describes), stored in an item data component.
+  5. Merge the blueprints into one **Building Plan** item with a selected piece, stored in an item data component. Keep sneak + right-click to switch pieces for now; the Rust-style radial menu replaces it in **P4.12**.
   6. Unit/game tests for snapping and footprints.
 - **Done when:** Floor, wall and stairs behave as before, but through the shared code, and each class is under ~200 lines.
 - **Depends on:** P0.5, P0.8  **Size:** L
+
+### P4.12 – Building Plan radial menu (Rust-style piece wheel)
+> Numbered P4.12 so the existing IDs stay the same; do it right after P4.1.
+
+- **Goal:** Choose what to build the way Rust does it: hold right-click with the Building Plan, a circle of pieces appears around the cursor, move the mouse onto one and release to select it. Today the blueprints cycle with sneak + right-click.
+- **Steps:**
+  1. **Input (client):** in `ClientTickEvents.END_CLIENT_TICK`, watch the use key while the player holds the Building Plan. A short click still places the piece; holding it for about 0.2 s opens the menu. (Rust places with left-click, but left-click is attack/break in Minecraft, so "tap = place, hold = menu" is the proposed mapping. Confirm it when starting the task.)
+  2. **Screen (client source set):** `RadialMenuScreen extends Screen`, does not pause the game. Draw the ring segments with `DrawContext` (filled segments or one texture per segment), an icon and name per piece, and highlight the segment under the cursor using the angle from the screen centre (`Math.atan2`). The middle of the circle is a dead zone that cancels.
+  3. **Selection (server):** on release, send a C2S payload (`SelectBuildingPiecePayload(pieceId)`). The server checks the player is holding a Building Plan and the piece exists, then writes it to the item's data component. Show the selected piece in the actionbar and the item tooltip.
+  4. **Pieces:** build the segments from the `BuildingPieceType` list from P4.1, so pieces added in P4.4 appear automatically. Use a second ring or pages if there are more than 8.
+  5. Remove the sneak + right-click cycling (or keep it as a fallback) and update the tooltip text in the lang provider.
+  6. **Optional:** reuse the same screen for the Hammer, as in Rust (hold right-click: upgrade to Wood / Stone / Metal / Armored, Rotate, Demolish).
+- **Done when:** holding right-click with the Building Plan opens the wheel, releasing over a segment selects that piece, a quick click still places, it works on a dedicated server, and the selection survives a relog.
+- **Depends on:** P4.1, P0.3  **Size:** M
 
 ### P4.2 – Placement preview (ghost)
 - **Goal:** See where a piece will go before placing it.
@@ -726,7 +740,7 @@ Fill in the README (features, screenshots, required dependencies), CHANGELOG, a 
 |---|---|
 | Make DataGen for everything instead of doing manual .json files | **P0.4** (+ rule 0.3.1, CI check) |
 | Resources (what's not already in vanilla) | **P2.1**, P2.2 |
-| Building mechanics (grid) | **P4.1–P4.4**, P4.5, P4.6, P4.11 |
+| Building mechanics (grid) | **P4.1–P4.4**, P4.5, P4.6, P4.11, P4.12 |
 | Barrels | **P5.1** |
 | Vending machines | **P6.1**, P6.2, P6.3 |
 | Barrel resources | **P5.1** (loot tables), P2.5 |
@@ -755,7 +769,7 @@ Fill in the README (features, screenshots, required dependencies), CHANGELOG, a 
 | Hold my items mod | **P8.2** |
 | Future: Spawn mechanic (beds or shore) | **P8.4** |
 
-**Added beyond the ToDo:** code review and commit (P0.1), version pin (P0.2), client/server split (P0.3), registry cleanup (P0.5), data attachments (P0.6), config (P0.7), dev tools and tests (P0.8), status HUD (P1.9), comfort/regen (P1.11), ore nodes (P2.2), animal harvesting (P2.4), workbenches (P2.6), furnaces and refinery (P2.8), recycler (P2.9), research (P2.10), placement preview (P4.2), building HP (P4.3), tool cupboard (P4.5), upkeep (P4.6), doors (P4.7), key lock (P4.9), deployables (P4.11), loot spawners (P5.3), monuments (P5.5), roads (P5.9), player shops (P6.3), melee/bows (P7.4), explosives (P7.5), traps (P7.6), sleepers (P8.3), teams (P8.5), map (P8.6), polish and release (Phase 9).
+**Added beyond the ToDo:** code review and commit (P0.1), version pin (P0.2), client/server split (P0.3), registry cleanup (P0.5), data attachments (P0.6), config (P0.7), dev tools and tests (P0.8), status HUD (P1.9), comfort/regen (P1.11), ore nodes (P2.2), animal harvesting (P2.4), workbenches (P2.6), furnaces and refinery (P2.8), recycler (P2.9), research (P2.10), placement preview (P4.2), radial building menu (P4.12), building HP (P4.3), tool cupboard (P4.5), upkeep (P4.6), doors (P4.7), key lock (P4.9), deployables (P4.11), loot spawners (P5.3), monuments (P5.5), roads (P5.9), player shops (P6.3), melee/bows (P7.4), explosives (P7.5), traps (P7.6), sleepers (P8.3), teams (P8.5), map (P8.6), polish and release (Phase 9).
 
 ---
 
