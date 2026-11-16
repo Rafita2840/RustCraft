@@ -15,7 +15,6 @@ public final class ModPayloads {
         VendingTradePacket.registerReceiver();
 
         // Server -> client
-        PayloadTypeRegistry.playS2C().register(ThirstSyncS2CPayload.PAYLOAD_ID, ThirstSyncS2CPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(ThirstSaturationSyncS2CPayload.PAYLOAD_ID, ThirstSaturationSyncS2CPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(PlayerStatsSyncS2CPayload.PAYLOAD_ID, PlayerStatsSyncS2CPayload.CODEC);
     }
 }
