@@ -3,7 +3,6 @@ package net.rafa.rustcraft;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.rafa.rustcraft.block.ModBlocks;
@@ -11,9 +10,7 @@ import net.rafa.rustcraft.block.entity.ModBlockEntities;
 import net.rafa.rustcraft.event.PlayerTickHandler;
 import net.rafa.rustcraft.item.ModGroups;
 import net.rafa.rustcraft.item.ModItems;
-import net.rafa.rustcraft.networking.ThirstSaturationSyncS2CPayload;
-import net.rafa.rustcraft.networking.ThirstSyncS2CPayload;
-import net.rafa.rustcraft.networking.VendingTradePacket;
+import net.rafa.rustcraft.networking.ModPayloads;
 import net.rafa.rustcraft.screen.ModScreenHandlers;
 import net.rafa.rustcraft.util.IEntityDataSaver;
 import net.rafa.rustcraft.util.ThirstData;
@@ -26,19 +23,16 @@ public class RustCraft implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-        ModGroups.registerModItemGroups();
-        ModBlocks.registerModBlocks();
+        // Items and blocks first: the creative tabs are filled from what they registered
         ModItems.registerModItems();
+        ModBlocks.registerModBlocks();
+        ModGroups.registerModItemGroups();
         ModBlockEntities.registerModBlockEntities();
         ModScreenHandlers.registerScreenHandlers();
 
         ServerTickEvents.START_SERVER_TICK.register(new PlayerTickHandler());
 
-        VendingTradePacket.registerPayload();
-        VendingTradePacket.registerReceiver();
-
-        PayloadTypeRegistry.playS2C().register(ThirstSyncS2CPayload.PAYLOAD_ID, ThirstSyncS2CPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(ThirstSaturationSyncS2CPayload.PAYLOAD_ID, ThirstSaturationSyncS2CPayload.CODEC);
+        ModPayloads.register();
 
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             ServerPlayerEntity player = handler.player;

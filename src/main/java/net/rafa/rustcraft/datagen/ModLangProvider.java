@@ -8,6 +8,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryWrapper;
 import net.rafa.rustcraft.RustCraft;
 import net.rafa.rustcraft.block.ModBlocks;
+import net.rafa.rustcraft.item.ModCategory;
 import net.rafa.rustcraft.item.ModItems;
 
 import java.util.HashSet;
@@ -67,8 +68,9 @@ public class ModLangProvider extends FabricLanguageProvider {
         block(builder, added, ModBlocks.HIGH_QUALITY_METAL_BUILDING_BLOCK, "High Quality Metal Building Block");
 
         // ── Creative tabs ──────────────────────────────────────
-        builder.add("group.rustcraft.rustcraft_items", "RustCraft Items");
-        builder.add("group.rustcraft.rustcraft_blocks", "RustCraft Blocks");
+        for (ModCategory category : ModCategory.values()) {
+            builder.add(category.translationKey(), category.displayName());
+        }
 
         // ── Messages (coloured in code via ModText) ────────────
         builder.add("text.rustcraft.cant_use", "Can't use!");

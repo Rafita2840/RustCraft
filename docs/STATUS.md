@@ -132,3 +132,16 @@ Result: ✅ works.
 Result: ✅ works.
 
 **P0.4 is done.** Everything except the Blockbench models, textures and `fabric.mod.json` is generated.
+
+## P0.5 – Registration cleanup (in progress)
+
+**Step 1 (Nov 2026):**
+- `item/ModCategory`: every item and block is registered with a category (`registerItem(name, category, item)` / `registerBlock(name, category, block)`).
+- Creative tabs are generated from the categories: Resources, Tools & Weapons, Clothing, Building, Deployables (Components and Medical & Food get a tab when they get their first entry). `ModGroups` no longer lists items by hand. Design decision: there will be one Building Plan item in the long run (see P4.1 / P4.12), so only the floor blueprint is in the creative tab (under Tools); the wall and stairs blueprints are deliberately left out and are obtained with `/give` (problem #9, resolved as a decision).
+- Lang names for the tabs come from the same enum, so the lang datagen stays in sync.
+- `networking/ModPayloads.register()` registers every payload and receiver in one call. The unused `ModMessages` is removed (problem #13, needs the file to be deleted by hand).
+- `RustCraft.onInitialize` now registers items and blocks before the tabs.
+
+**Left for later steps** (not worth creating empty until something uses them): `ModSounds`, `ModDamageTypes`, `ModEffects`, `ModComponents`, `ModEntities`, and the feature packages (`thirst`, `building`, `vending`…). Each is added by the first task that needs it (P1.x, P2.x, P4.x). Moving the existing classes into feature packages is better done together with P0.6 (thirst) and P4.1 (building).
+
+Result: ✅ client and datagen run fine.
