@@ -171,3 +171,18 @@ Result: ✅ client works (dedicated server not yet ticked).
 - Needs `./gradlew runDatagen` (new lang keys for the game rule and the reload messages).
 
 Result: ⬜ pending.
+
+## P0.8 – Developer tooling
+
+**Step 1 – commands** (working)
+- All `/rustcraft` commands (operators only) now live in `command/RustCommands`: `reload`, `stats get <player>`, `stats set thirst <0-20> [player]`. Radiation and bleeding get their own `stats set` entry when those stats exist.
+- Not added because nothing exists to use them yet: `loot roll` (vanilla `/loot give @s loot <table>` works; revisit with the mod's own tables in P5.3), `building grid show` (P4.1), `spawn crate` (`/give` or `/setblock`).
+
+**Step 2 – game tests** (pending)
+- `ThirstMath` holds the drain rules as plain functions; `PlayerTickHandler` uses them. `RustConfig.parse(Reader)` is split out of `load()` so it can be tested.
+- `src/gametest` (never in the mod jar): 9 tests in `RustCraftGameTests` for thirst drain per movement, config-driven drain, exhaustion limit, clamping, save/load of player data (including old saves), config parsing and clamping, and the game rule default. Run with `./gradlew runGametest`.
+- Trade execution and inventory consumption are not covered: vending stock and trading are deferred to P6.1, and there is no grid to snap to until P4.1.
+- Still to add by hand: a `game tests` step in `.github/workflows/build.yml` (`./gradlew runGametest`).
+- Not done: test world template (`run/` is git-ignored, create a superflat creative world there), Mod Menu integration (optional).
+
+Result: ⬜ pending (step 2).

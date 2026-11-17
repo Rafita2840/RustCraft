@@ -1,0 +1,18 @@
+{
+	"schemaVersion": 1,
+	"id": "rustcraft-gametest",
+	"version": "1.0.0",
+	"name": "RustCraft GameTests",
+	"description": "Game tests for RustCraft. Only used by ./gradlew runGametest, never shipped.",
+	"license": "MIT",
+	"environment": "*",
+	"entrypoints": {
+		"fabric-gametest": [
+			"net.rafa.rustcraft.test.RustCraftGameTests"
+		]
+	},
+	"depends": {
+		"rustcraft": "*",
+		"fabric-api": "*"
+	}
+}

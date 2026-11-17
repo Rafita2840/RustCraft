@@ -34,6 +34,13 @@ fabricApi {
 	configureDataGeneration {
 		client = true
 	}
+
+	// Game tests live in src/gametest and are never part of the mod jar. Run them with ./gradlew runGametest
+	configureTests {
+		createSourceSet = true
+		modId = "rustcraft-gametest"
+		eula = true
+	}
 }
 
 dependencies {

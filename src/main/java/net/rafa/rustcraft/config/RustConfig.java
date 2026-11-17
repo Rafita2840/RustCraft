@@ -71,10 +71,7 @@ public final class RustConfig {
         RustConfig loaded;
         if (Files.exists(path)) {
             try (Reader reader = Files.newBufferedReader(path)) {
-                loaded = GSON.fromJson(reader, RustConfig.class);
-                if (loaded == null) {
-                    loaded = new RustConfig();
-                }
+                loaded = parse(reader);
             } catch (IOException | JsonParseException e) {
                 RustCraft.LOGGER.error("Could not read {}, keeping the current values: {}", path, e.toString());
                 return false;
@@ -82,13 +79,27 @@ public final class RustConfig {
         } else {
             loaded = new RustConfig();
         }
-        // Sections missing from the file come back as null
-        if (loaded.thirst == null) loaded.thirst = new Thirst();
-        if (loaded.gamma == null) loaded.gamma = new Gamma();
-        loaded.clamp();
         instance = loaded;
         save();
         return true;
+    }
+
+    /**
+     * Turns file contents into a usable config: missing options keep their defaults and values are clamped.
+     * Public so tests can use it without touching files.
+     *
+     * @throws JsonParseException if the text is not valid JSON
+     */
+    public static RustConfig parse(Reader reader) {
+        RustConfig parsed = GSON.fromJson(reader, RustConfig.class);
+        if (parsed == null) {
+            parsed = new RustConfig();
+        }
+        // Sections missing from the file come back as null
+        if (parsed.thirst == null) parsed.thirst = new Thirst();
+        if (parsed.gamma == null) parsed.gamma = new Gamma();
+        parsed.clamp();
+        return parsed;
     }
 
     private static void save() {
