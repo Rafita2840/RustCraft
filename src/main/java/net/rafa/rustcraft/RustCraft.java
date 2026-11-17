@@ -2,7 +2,6 @@ package net.rafa.rustcraft;
 
 import net.fabricmc.api.ModInitializer;
 
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.rafa.rustcraft.block.ModBlocks;
 import net.rafa.rustcraft.block.entity.ModBlockEntities;
 import net.rafa.rustcraft.command.RustCommands;
@@ -36,7 +35,7 @@ public class RustCraft implements ModInitializer {
         ModBlockEntities.registerModBlockEntities();
         ModScreenHandlers.registerScreenHandlers();
 
-        ServerTickEvents.START_SERVER_TICK.register(new PlayerTickHandler());
+        PlayerTickHandler.register();
 
         ModPayloads.register();
         ConfigSync.register();

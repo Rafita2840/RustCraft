@@ -38,12 +38,24 @@ public final class RustConfig {
         public int exhaustionLimit = 5000;
         /** Drain per tick while standing still. */
         public int idleDrain = 1;
-        /** Extra drain per tick while walking. */
+        /** Extra drain per tick while moving (walking, sneaking, swimming; not while riding). */
         public int walkDrain = 2;
-        /** Extra drain per tick while running. */
+        /** Extra drain per tick while sprinting and moving (on top of walkDrain). */
         public int runDrain = 7;
-        /** Extra drain per tick while sprinting. */
-        public int sprintDrain = 2;
+        /** Extra drain on a tick where the player jumped. */
+        public int jumpDrain = 2;
+        /** Highest drain per tick before multipliers (idle + walk + run + jump = 12 with the defaults). */
+        public int maxDrainPerTick = 12;
+        /** Biomes warmer than this count as hot (desert, savanna and badlands are 2.0; plains is 0.8). */
+        public float hotBiomeTemperature = 1.0f;
+        /** Drain multiplier in hot biomes. */
+        public float hotBiomeMultiplier = 1.5f;
+        /** Drain multiplier in ultrawarm dimensions (the Nether). Used instead of the hot biome one, not on top of it. */
+        public float netherMultiplier = 2.0f;
+        /** Damage dealt while thirst is 0, once every {@code dehydrationDamageInterval} ticks. */
+        public float dehydrationDamage = 1.0f;
+        /** Ticks between two dehydration hits (80 = 4 s, the same as vanilla starvation). */
+        public int dehydrationDamageInterval = 80;
     }
 
     public static final class Gamma {
@@ -122,7 +134,12 @@ public final class RustConfig {
         thirst.idleDrain = Math.max(0, thirst.idleDrain);
         thirst.walkDrain = Math.max(0, thirst.walkDrain);
         thirst.runDrain = Math.max(0, thirst.runDrain);
-        thirst.sprintDrain = Math.max(0, thirst.sprintDrain);
+        thirst.jumpDrain = Math.max(0, thirst.jumpDrain);
+        thirst.maxDrainPerTick = Math.max(0, thirst.maxDrainPerTick);
+        thirst.hotBiomeMultiplier = Math.max(0f, thirst.hotBiomeMultiplier);
+        thirst.netherMultiplier = Math.max(0f, thirst.netherMultiplier);
+        thirst.dehydrationDamage = Math.max(0f, thirst.dehydrationDamage);
+        thirst.dehydrationDamageInterval = Math.max(1, thirst.dehydrationDamageInterval);
         gamma.maxGamma = Math.max(0f, Math.min(gamma.maxGamma, 1f));
     }
 }
