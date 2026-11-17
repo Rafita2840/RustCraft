@@ -31,6 +31,11 @@ public record RustPlayerData(int thirst, float thirstExhaustion) {
         return new RustPlayerData(RustConfig.get().thirst.respawnThirst, 0);
     }
 
+    /** The values the client displays. Only a change in these is sent to the client. */
+    public DisplayedStats displayed() {
+        return new DisplayedStats(thirst);
+    }
+
     public RustPlayerData withThirst(int thirst) {
         return new RustPlayerData(Math.max(0, Math.min(thirst, MAX_THIRST)), thirstExhaustion);
     }

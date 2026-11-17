@@ -26,7 +26,11 @@
         ]
 	},
 	"mixins": [
-		"rustcraft.mixins.json"
+		"rustcraft.mixins.json",
+		{
+			"config": "rustcraft.client.mixins.json",
+			"environment": "client"
+		}
 	],
 	"depends": {
 		"fabricloader": ">=0.16.14",

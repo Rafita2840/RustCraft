@@ -1,0 +1,12 @@
+{
+	"required": true,
+	"package": "net.rafa.rustcraft.mixin.client",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"ClientPlayerEntityMixin",
+		"InGameHudMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

@@ -15,9 +15,13 @@ public final class ModGameRules {
 
     public static final String THIRST_ENABLED_NAME = "rustcraftThirstEnabled";
 
-    /** When false, thirst does not drain. */
+    /**
+     * When false, thirst does not drain and the HUD hides it. Clients are told through {@link ConfigSync}
+     * again every time it changes.
+     */
     public static final GameRules.Key<GameRules.BooleanRule> THIRST_ENABLED = GameRuleRegistry.register(
-            THIRST_ENABLED_NAME, GameRules.Category.PLAYER, GameRuleFactory.createBooleanRule(true));
+            THIRST_ENABLED_NAME, GameRules.Category.PLAYER, GameRuleFactory.createBooleanRule(true,
+                    (server, rule) -> server.getPlayerManager().getPlayerList().forEach(ConfigSync::send)));
 
     /** Call once from onInitialize so the rules are registered before any world loads. */
     public static void init() {

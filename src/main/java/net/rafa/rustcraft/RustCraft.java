@@ -10,7 +10,7 @@ import net.rafa.rustcraft.config.ModGameRules;
 import net.rafa.rustcraft.config.RustConfig;
 import net.rafa.rustcraft.data.ModAttachments;
 import net.rafa.rustcraft.data.PlayerDataEvents;
-import net.rafa.rustcraft.event.PlayerTickHandler;
+import net.rafa.rustcraft.thirst.PlayerTickHandler;
 import net.rafa.rustcraft.item.ModGroups;
 import net.rafa.rustcraft.item.ModItems;
 import net.rafa.rustcraft.networking.ModPayloads;

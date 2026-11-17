@@ -1,7 +1,8 @@
-package net.rafa.rustcraft.data;
+package net.rafa.rustcraft.thirst;
 
 import net.minecraft.world.Difficulty;
 import net.rafa.rustcraft.config.RustConfig;
+import net.rafa.rustcraft.data.RustPlayerData;
 
 /** The thirst rules as plain functions (no world or player needed), so they can be tested on their own. */
 public final class ThirstMath {
@@ -40,6 +41,13 @@ public final class ThirstMath {
     public static float drainPerTick(boolean moving, boolean sprinting, boolean jumped,
                                      boolean ultrawarm, float biomeTemperature, RustConfig.Thirst config) {
         return baseDrain(moving, sprinting, jumped, config) * multiplier(ultrawarm, biomeTemperature, config);
+    }
+
+    /** Thirst needed to start sprinting: below 3 droplets (6 of 20) sprinting is blocked, like vanilla food at 6 or less. */
+    public static final int MIN_THIRST_TO_SPRINT = 6;
+
+    public static boolean canSprint(int thirst) {
+        return thirst >= MIN_THIRST_TO_SPRINT;
     }
 
     /** Adds drain to the counter. When it reaches the limit, thirst drops by 1 (never below 0) and the counter resets. */
