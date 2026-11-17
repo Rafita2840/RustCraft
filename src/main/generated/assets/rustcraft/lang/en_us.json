@@ -13,6 +13,8 @@
   "block.rustcraft.vending_machine": "Vending Machine",
   "block.rustcraft.wooden_building_block": "Wooden Building Block",
   "block.rustcraft.wooden_building_block_center": "Center Wooden Building Block",
+  "death.attack.rustcraft.dehydration": "%1$s died of thirst",
+  "death.attack.rustcraft.dehydration.player": "%1$s died of thirst while fighting %2$s",
   "gamerule.rustcraftThirstEnabled": "RustCraft: thirst enabled",
   "gamerule.rustcraftThirstEnabled.description": "Whether thirst drains over time",
   "group.rustcraft.building": "Building",

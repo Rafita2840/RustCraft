@@ -86,6 +86,10 @@ public class ModLangProvider extends FabricLanguageProvider {
         builder.add("text.rustcraft.stats_get", "%s: thirst %s/%s");
         builder.add("text.rustcraft.stats_thirst_set", "Set thirst of %s to %s");
 
+        // ── Death messages ─────────────────────────────────────
+        builder.add("death.attack.rustcraft.dehydration", "%1$s died of thirst");
+        builder.add("death.attack.rustcraft.dehydration.player", "%1$s died of thirst while fighting %2$s");
+
         // ── Game rules ─────────────────────────────────────────
         builder.add("gamerule.rustcraftThirstEnabled", "RustCraft: thirst enabled");
         builder.add("gamerule.rustcraftThirstEnabled.description", "Whether thirst drains over time");

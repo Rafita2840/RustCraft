@@ -9,6 +9,8 @@
 
 ### 0.1 Project facts (from the repo, Nov 2026)
 
+> **Historical:** this is the state before Phase 0. The current versions are in `docs/STATUS.md` (P0.2: Minecraft 1.21.1, Yarn `1.21.1+build.3`, Fabric API `0.107.0+1.21.1`, Loom `1.11.8`; datagen is set up).
+
 | Thing | Value |
 |---|---|
 | Loader | Fabric Loader `0.16.14` (`fabric.mod.json` → `>=0.16.14`) |
@@ -43,6 +45,8 @@ Each task has:
 ---
 
 ## 1. Current state (snapshot from reviewing the code)
+
+> **Historical:** snapshot from before Phase 0. All problems below are tracked (and most fixed) in `docs/STATUS.md`.
 
 This is what already exists. P0.1 is to confirm and finish this audit, but most of it is already written down here.
 
@@ -97,9 +101,9 @@ This is what already exists. P0.1 is to confirm and finish this audit, but most 
 **Suggested milestones**
 
 - **M1 "Clean base"**: Phase 0 done. Everything is datagen'd and the dedicated server boots.
-- **M2 "Naked on the beach"**: P1.1–P1.4, P2.1–P2.6. You can survive (thirst, water, food), gather and craft basic tools.
+- **M2 "Naked on the beach"**: Phase 1A (P1.1a/b, P1.3, P1.7, P1.2a, P1.4 core), P2.1–P2.6. You can survive (thirst, water, food), gather and craft basic tools.
 - **M3 "First base"**: Phase 4 core (P4.1–P4.7, P4.12) + P3.1–P3.2. You can build a twig→stone base with a door and lock.
-- **M4 "Roaming"**: Phase 5 + P1.5–P1.8 + Phase 6. Barrels, crates, radiation, bear, vending machines, keycards.
+- **M4 "Roaming"**: Phase 5 + Phase 1B (P1.2b, P1.5, P1.6, P1.8–P1.11) + Phase 6. Barrels, crates, radiation, bear, vending machines, keycards.
 - **M5 "Pew pew"**: Phase 7. Guns, ammo, raiding.
 - **M6 "Feels like Rust"**: Phase 8 + 9.
 
@@ -199,113 +203,141 @@ The phases are not strictly sequential. Phase 2 and Phase 4 can run in parallel 
 
 ## Phase 1 – Survival core
 
+> **Reviewed 17 Nov 2026, before starting P1.1.** Phase 1 is split in two:
+> - **1A – needed for M2** ("Naked on the beach"): P1.1a, P1.1b, P1.3, P1.7, P1.2a, P1.4 (core). Work in that order.
+> - **1B – done next to M4**, when their sources exist: P1.2b, P1.5, P1.6, P1.8, P1.9 (full), P1.10, P1.11.
+>
+> **Shared pieces**, built by the first task that needs them:
+> - **Client mixin config** (P1.1b): `rustcraft.client.mixins.json` in `src/client/resources`, registered for the client environment in `fabric.mod.json`. `rustcraft.mixins.json` stays common (server-safe).
+> - **General stat sync** (P1.1b): `PlayerStatsSyncS2CPayload` carries a small "displayed stats" record (thirst now; radiation, bleeding, cold later), and `PlayerStats.set` compares that record instead of only `thirst`.
+> - **`ModComponents`** (first of P1.7 / P1.2a / P1.4): one place for the mod's data component types.
+> - **`ModDamageTypes` + `ModDynamicRegistryProvider`** (P1.1a): damage types are datagen'd; each one gets a `death.attack.rustcraft.<name>` lang entry and its tags in `ModDamageTypeTagProvider`. Over-time and environmental types (dehydration, radiation, bleeding, cold) **must** go in `#minecraft:no_knockback` (via `ModTags.DamageTypes.NO_KNOCKBACK`), otherwise each hit gives the player a small random push.
+
 ### P1.1 – Finish the thirst system (ToDo: "+Thirst bar")
 - **Goal:** Thirst works like the ToDo describes and has real consequences.
-- **Design (from the ToDo):** Each tick, add to *thirst exhaustion*: **still +1**, **moving +2**, **running +7**, **jumping +2**, with a **maximum of 12 per tick**. When exhaustion reaches the threshold (currently 5000), thirst goes down by 1 and exhaustion resets. Thirst goes from 0 to 20 (10 droplets).
+- **Design (from the ToDo):** Each tick, add to *thirst exhaustion*: **still +1**, **moving +2**, **running +7**, **jumping +2**, with a **maximum of 12 per tick**. When exhaustion reaches the threshold (5000), thirst goes down by 1 and exhaustion resets. Thirst goes from 0 to 20 (10 droplets).
+- **Target times with the defaults** (full bar to empty): idle ≈ 83 min, walking ≈ 28 min, sprinting ≈ 8 min, sprint-jumping ≈ 7 min. Hot biomes ×1.5, the Nether ×2. Change the config, not the code, if these feel wrong in play.
+- Split into **P1.1a** (server) and **P1.1b** (client).
+
+#### P1.1a – Drain signals, multipliers, dehydration (server)
 - **Steps:**
-  1. Replace the speed thresholds with reliable signals. Use `player.isSprinting()` for running. For moving, check whether horizontal velocity is above about 0.01 (`getVelocity().horizontalLengthSquared()`, or the position delta since the last tick, which is more reliable on the server). For jumping, inject into `PlayerEntity.jump()` (or use `Stats.JUMP`) and set a per-tick flag. Add each bonus separately and cap the total at 12, as the ToDo says. Swimming and sneaking can use their own values from config.
-  2. Add multipliers: hot biomes (temperature > 1.0) ×1.5, the nether ×2, wearing heavy armor, and so on. Keep them configurable.
-  3. Consequences: at thirst 0, deal damage every N seconds with a custom `rustcraft:dehydration` damage type. Below 3 droplets, block sprinting like vanilla hunger does. Optional: thirst can also block natural health regen.
-  4. Starting value: new players and respawns get a configurable start value (Rust respawns you partly hydrated). Fixes problem #3.
-  5. "Saturation to decrease thirst": add a **hydration saturation** buffer, filled by drinks, that is used up before the visible thirst bar drops, like vanilla food saturation.
-  6. HUD: draw above the hunger bar and move up a row when the air bubbles or mount health are visible. Hide it in creative/spectator. Optional: a small shake when thirst is low.
-  7. Remove the debug `drinkable_block` once P1.2 lands, or keep it creative-only.
-- **Done when:** Standing still for 10 minutes loses much less thirst than sprinting for 10 minutes. Dehydration hurts. The HUD never overlaps anything.
-- **Depends on:** P0.6  **Size:** M
+  1. **Movement** = change in horizontal position since the last tick (tracked per player on the server). Not `getVelocity()`: the server doesn't know a player's real velocity. Riding a vehicle doesn't count as moving.
+  2. **Running** = `isSprinting()` while moving (sprinting into a wall is idle). **Jumping** = the vanilla `Stats.JUMP` counter went up (the server calls `jump()` itself, so no mixin).
+  3. Config: `sprintDrain` is renamed **`jumpDrain`** (it was always the ToDo's jump value). New `maxDrainPerTick` (12).
+  4. **Cap first, then multiply**: base drain is capped at 12, then multiplied by the hot-biome (temperature > 1.0) or Nether (ultrawarm) multiplier. The Nether replaces the hot-biome one. Exhaustion becomes a `float` so multipliers aren't rounded away (old saves still load).
+  5. **Consequences:** at thirst 0, `rustcraft:dehydration` damage every 80 ticks (configurable), following vanilla starvation's difficulty rule (none on Peaceful, stops at 5 hearts on Easy, at half a heart on Normal, kills on Hard). The damage type bypasses armor and effects like starvation.
+  6. Creative, spectator and dead players don't drain.
+  7. Rule logic stays in `ThirstMath` (pure functions) with game tests for each rule.
+- **Later / optional:** separate swimming and sneaking values; heavy-armor multiplier (with Phase 3 clothing); thirst blocking natural regen (with P1.11).
+- **Done when:** the drain values above hold (game tests), dehydration hurts with a proper death message, and creative players aren't affected.
+- **Depends on:** P0.6  **Size:** S–M
+
+#### P1.1b – HUD, sprint block, game-rule sync (client)
+- **Steps:**
+  1. Create the client mixin config and the general stat sync (see "Shared pieces").
+  2. **Block sprinting below 3 droplets** (thirst < 6): a client mixin on the sprint check in `ClientPlayerEntity` (where vanilla checks food > 6), reading `ClientPlayerStats`. Don't force sprint off from the server: it makes movement stutter.
+  3. **Sync the game rule**: `rustcraftThirstEnabled` goes into `ServerConfigSyncS2CPayload` and is resent when it changes (boolean rule change callback). The HUD hides when it's off.
+  4. **HUD** through a first `StatusHud` skeleton (the full version is P1.9), so it isn't built twice: thirst row above the hunger bar, moves up a row when air bubbles are visible, and handles mount health (which replaces the hunger bar and can be 2 rows). Hidden in creative/spectator. Optional: shake when low.
+- **Done when:** the HUD never overlaps anything, hides when the game rule is off, and you can't start sprinting below 3 droplets.
+- **Depends on:** P1.1a, P0.7  **Size:** M
+
+*Moved out of P1.1:* the **hydration saturation** buffer ("saturation to decrease thirst") is built in **P1.2a**, where drinks exist to fill it. The debug `drinkable_block` stays until P1.2a, then becomes creative-only.
 
 ### P1.2 – Drinkable water (ToDo: "Drinkable water (fluid)")
 - **Goal:** Water sources that restore thirst, with salt water vs fresh water like in Rust.
 - **Description:** In Rust, sea water is salty (drinking it causes dehydration), while rivers, lakes and rain water are fresh. Purified water is safe.
+
+#### P1.2a – World drinking & containers (1A)
 - **Steps:**
-  1. **Drinking from the world:** with an empty hand, sneak + right-click on water. Raycast for fluids (`RaycastContext.FluidHandling.SOURCE_ONLY`). Decide fresh vs salt from the biome: `#minecraft:is_ocean` / `#is_beach` → salt, otherwise fresh. This needs no new fluid and works everywhere.
-  2. **Containers:** `water_bottle` (small, 0.5 L) and `water_jug` (5 L). Store the amount and `water_type` (fresh/salt/purified) in a data component. Use the vanilla potion water bottle → maps to fresh. Drinking restores thirst based on amount and type.
-  3. **Custom fluids** (what the ToDo asks for): register `fresh_water`, `salt_water` (optional) and `purified_water` as `FlowableFluid`s with buckets (Fabric `FluidRenderHandlerRegistry` for rendering). Decide whether salt water should also *replace* ocean water through worldgen. That's a big change, so in the first version just use the biome rule from step 1.
-  4. **Purification:** boil salt water in a furnace/campfire (bottle → purified bottle), or build a `water_purifier` deployable. Later add a `water_catcher` (fills slowly with rain) and a `water_barrel`.
-  5. Salt water: drinking gives a little thirst but adds a "salty" exhaustion penalty, so it's a net loss.
+  1. **Hydration saturation** (moved from P1.1): a hidden buffer in `RustPlayerData`, filled by drinks, used up before the visible bar drops, like vanilla food saturation. Not synced (not displayed).
+  2. **Drinking from the world:** sneak + right-click on water with an empty hand. The client sends **no use packet** for an empty hand looking at open water, so add a small C2S payload (client detects the fluid with a raycast and sends it); the server re-checks with its own `RaycastContext.FluidHandling.SOURCE_ONLY` raycast and a reach check. Fresh vs salt from the biome: `#minecraft:is_ocean` / `#is_beach` → salt, otherwise fresh.
+  3. **Containers:** `water_bottle` (small) and `water_jug` (large); the amount is a data component. Make **salt, fresh and purified separate items** rather than one item with a `water_type` component: vanilla smelting can't match ingredients by component, and separate items keep "boil salt water" a plain recipe. The vanilla water bottle counts as fresh.
+  4. Salt water: a little thirst but a net loss (adds exhaustion).
+  5. `drinkable_block` becomes creative-only.
 - **Done when:** You can survive on rivers and bottles, ocean water hurts you, and containers show their contents in the tooltip.
-- **Depends on:** P1.1  **Size:** L (custom fluids are the large part, so split them into P1.2a world drinking + containers and P1.2b fluids + purification)
+- **Depends on:** P1.1a  **Size:** M
+
+#### P1.2b – Custom fluids & purification (1B)
+- **Steps:** register `fresh_water`, `salt_water` (optional) and `purified_water` as `FlowableFluid`s with buckets (Fabric `FluidRenderHandlerRegistry`). Keep the biome rule from P1.2a for ocean water (D10). Purification: boil salt water in a furnace/campfire, or a `water_purifier` deployable. Later a `water_catcher` (fills with rain) and `water_barrel`.
+- **Done when:** the fluids exist, can be bucketed and drunk, and salt water can be purified.
+- **Depends on:** P1.2a, P2.8 (for the Rust furnace)  **Size:** L
 
 ### P1.3 – Force low gamma (ToDo: "Force gamma to be low")
 - **Goal:** Nights and caves are actually dark, as in Rust (no full-bright cheating).
-- **Steps:** Add a client mixin on `GameOptions`/`SimpleOption<Double> gamma` (or `LightmapTextureManager.update`) that clamps gamma to the server-provided maximum (default 0.0–0.5). Sync the maximum from server config on join. Hide or lock the slider in the video options screen and show a tooltip saying the server enforces it. Also consider clamping `nightVision` from other sources and the `darknessEffectScale`/`brightness` accessibility settings carefully, so accessibility options stay respected.
-- **Done when:** Setting gamma to 100% in options has no effect on a server with the option on.
-- **Depends on:** P0.7, P0.3  **Size:** S
+- **Steps:** A client mixin (client mixin config from P1.1b) clamps gamma **where the lightmap reads it** (`LightmapTextureManager.update`, `@ModifyExpressionValue` from MixinExtras, which Fabric Loader bundles) to the server-provided maximum (already synced by P0.7). **Don't change the option itself**: that writes to `options.txt` and the player would keep the low gamma after leaving the server. Show a tooltip on the gamma slider saying the server limits it. Leave night vision and the accessibility settings (`darknessEffectScale`, brightness) alone.
+- **Done when:** Setting gamma to 100% has no effect on a server with `forceLow` on, and leaving the server restores the player's own setting.
+- **Depends on:** P0.7, P1.1b  **Size:** S
 
 ### P1.4 – Food (ToDo: "Food (what's not already in vanilla)")
 - **Goal:** Add Rust foods that vanilla doesn't have, and let food also affect hydration.
-- **Item list:**
-  - *Meat (raw / cooked / burnt):* bear meat, wolf meat (vanilla wolves drop it), deer meat, horse meat, fish fillet (vanilla fish can count as "small/medium fish"). Pork and chicken map to vanilla.
-  - *Foraged:* **corn** (P2.7), **pumpkin** (vanilla), **potato** (vanilla), mushroom (vanilla), **blueberries** / other wild berries, **cactus flesh** (hydration +), apple (vanilla).
-  - *Loot food:* can of beans, can of tuna, granola, chocolate bar, pickles, small water bottle, black raspberries. These come from food crates and barrels (Phase 5).
-  - *Cooking:* raw → cooked in a furnace/campfire. **Burnt** happens when cooked meat is left in a Rust furnace/campfire for too long (P2.8). Burnt food is low value and gives a small hunger debuff.
-- **Steps:** Create a `RustFoodItem` with a `FoodComponent` plus a custom `hydration` component (positive for cactus, cans and fruit, negative for salty food). Hook into `Item.finishUsing` to apply hydration to thirst. Add datagen models, lang, smelting/campfire recipes, and an item tag `rustcraft:foods/raw_meat`, etc.
-- **Done when:** Every listed food exists, can be eaten, and some foods change thirst.
-- **Depends on:** P1.1, P0.4  **Size:** M
+- **Item list** (each item is created by the task that gives it a source, so nothing exists without a way to get it):
+  - *Core (P1.4):* hydration on vanilla foods (melon, apple, cactus flesh…), cactus flesh, wild berries, loot foods (can of beans, can of tuna, granola, chocolate bar, pickles) as items (their crate sources come in Phase 5; until then creative / `/give`).
+  - *With their source:* bear meat (P5.8), deer meat (P5.8), wolf/horse meat (P2.4 harvesting), corn (P2.7), burnt meat (P2.8 furnace).
+- **Steps:** A `rustcraft:hydration` data component (in `ModComponents`) applied in **one place** when any item is eaten or drunk, so vanilla foods get it through `DefaultItemComponentEvents.MODIFY` without a subclass. Positive for cactus, cans and fruit, negative for salty food. Datagen models, lang, smelting/campfire recipes, item tags like `rustcraft:foods/raw_meat`.
+- **Done when:** the core foods exist, can be eaten, and hydration changes thirst for both mod and vanilla foods.
+- **Depends on:** P1.1a, P1.2a (shares the hydration path)  **Size:** M
 
-### P1.5 – Radiation (ToDo: "radiation → custom biome to receive radiation")
+### P1.5 – Radiation (ToDo: "radiation → custom biome to receive radiation") — 1B
 - **Goal:** Places that irradiate you, with protection that matters.
 - **Design (Rust-like):** There are two numbers. **Radiation level** is the environment's exposure rate (rads/s) where you stand. **Radiation poisoning** is what your body has accumulated. Poisoning goes up when exposure is higher than your *radiation protection*. It goes down slowly when you're out of radiation (anti-rad pills help). Above certain thresholds you lose health and regen. In Rust, monuments are rated low/medium/high radiation (Gas Station and Supermarket ≈ none, Water Treatment/Train Yard/Airfield ≈ medium, Launch Site/Military Tunnels ≈ high).
 - **Steps:**
-  1. **Sources:**
-     - (a) An **irradiated biome** (`rustcraft:irradiated_wasteland`, created by the dynamic registry datagen). Adding biomes to overworld generation on Fabric 1.21 needs a library. Use **Biolith** or **TerraBlender** (pick one, and add it as a dependency in P0.2). The biome stores a base radiation level.
-     - (b) **Zones** from structures and monuments (Phase 5): a `RadiationZone` defined by a structure's bounding box plus a level (low/med/high). Look it up from `StructureAccessor` with a per-player cache.
-     - (c) Optional **radioactive blocks/items** (e.g. a `radioactive_barrel` that emits within a radius).
-  2. Add a server tick every 20 ticks per player: compute exposure → apply protection → update poisoning → effects (thresholds 1–4: hunger drain, no health regen, damage with the `rustcraft:radiation` damage type).
-  3. Add a HUD element: a radiation icon with level, like the Rust bottom-right status list (P1.9), and a Geiger counter sound clicking faster with exposure.
-  4. Register a `StatusEffect` `radiation_poisoning` only for visuals (icon in the inventory). The real value stays in the attachment.
-- **Done when:** Walking into the biome or zone with no protection gradually damages you, and a hazmat suit lets you stay much longer.
-- **Depends on:** P0.6, P1.7  **Size:** L
+  1. **Sources in this task:** a `RadiationSource` lookup with a debug source to test it: a `radioactive_barrel` block that emits within a radius, and `/rustcraft stats set radiation`. The **irradiated biome** is built in **P5.4** (with the D3 library decision), and **monument zones** in **P5.5**; both plug into the same lookup.
+  2. Server tick every 20 ticks per player: exposure → protection (P1.7) → poisoning → effects (thresholds 1–4: hunger drain, no health regen, damage with the `rustcraft:radiation` damage type).
+  3. HUD: radiation icon with level in the status list (P1.9) and a Geiger counter sound clicking faster with exposure. Uses the general stat sync.
+  4. A `StatusEffect` `radiation_poisoning` only for visuals (icon in the inventory). The real value stays in the attachment.
+- **Done when:** Standing near the radioactive debug source with no protection gradually damages you, and a hazmat suit lets you stay much longer.
+- **Depends on:** P0.6, P1.7, P1.1b (stat sync)  **Size:** M–L
 
-### P1.6 – Bleeding (ToDo: "bleeding → when shot")
+### P1.6 – Bleeding (ToDo: "bleeding → when shot") — 1B
 - **Goal:** Hits from guns, arrows, animals and sharp weapons can cause bleeding until you treat it.
 - **Steps:**
-  1. Add a `bleeding` value (in Rust, bleeding is a pool that drains slowly and deals damage over time) to the player attachment.
+  1. Add a `bleeding` value (a pool that drains slowly and deals damage over time) to `RustPlayerData`.
   2. Apply bleeding in `ServerLivingEntityEvents.ALLOW_DAMAGE`/`AFTER_DAMAGE`, depending on the damage-type tag `rustcraft:causes_bleeding` (arrows, bullets, bear/wolf attacks, sword/spear). Add bleed amount = damage × factor, reduced by armor.
-  3. Each second: deal damage with the `rustcraft:bleeding` type and reduce the bleeding pool. Stop when it's empty.
-  4. Add a visual: a blood-drop HUD icon, occasional red particles under the player, and maybe a red vignette.
+  3. Each second: deal damage with the `rustcraft:bleeding` type and reduce the pool. Stop when it's empty.
+  4. Visuals: a blood-drop HUD icon, occasional red particles, maybe a red vignette. Uses the general stat sync.
   5. Cures: bandage, syringe, medkit (P1.8). Vanilla healing (golden apple, regeneration) **doesn't** stop bleeding.
 - **Done when:** Getting shot by a skeleton makes you bleed, and a bandage stops it.
-- **Depends on:** P0.6  **Size:** M
+- **Depends on:** P0.6, P1.1b (stat sync)  **Size:** M
 
 ### P1.7 – Protection properties (ToDo: "→ property to add radiation and cold protection")
 - **Goal:** A generic way to give items protection stats, as in Rust's clothing tables.
-- **Description:** Define a **data component** `rustcraft:protection` with `{radiation: float, cold: float, projectile: float, melee: float, explosion: float, bite: float}` (only the fields you need at first: radiation and cold). Equipped armor sums its values. Add a tooltip line for each non-zero value with an icon. Use a `ProtectionCalculator.get(player, type)` helper that the radiation, cold, bleeding and gun systems read.
+- **Description:** A **data component** `rustcraft:protection` (in `ModComponents`) with `{radiation: float, cold: float, projectile: float, melee: float, explosion: float, bite: float}` (only radiation and cold at first). Equipped armor sums its values. Tooltip line per non-zero value. `ProtectionCalculator.get(player, type)` is what radiation, cold, bleeding and guns read. **No `radiation_protective` item tag**: the component replaces it.
 - **Steps:** Register the component type (`Registries.DATA_COMPONENT_TYPE`) with a codec and packet codec. Set default values on item `Settings` for mod armor. Optionally apply it to vanilla armor too (leather has cold protection, for example) via `DefaultItemComponentEvents.MODIFY`. Show the totals in the inventory screen next to the armor bar (stretch goal).
-- **Done when:** The hazmat suit shows "Radiation +X" and "Cold +Y", and the systems use those values.
+- **Done when:** The hazmat suit shows "Radiation +X" and "Cold +Y", and `ProtectionCalculator` returns the summed values (game test).
 - **Depends on:** P0.5  **Size:** S–M
 
-### P1.8 – Bandages, syringe & other medical (ToDo: "Bandages and Syringe")
+### P1.8 – Bandages, syringe & other medical (ToDo: "Bandages and Syringe") — 1B
 - **Goal:** Rust-style healing items.
-- **Items:**
-  - **Bandage** (cloth ×4): 2 s use time, stops bleeding, heals a little instantly.
-  - **Medical syringe** (cloth + metal fragments + low grade fuel): 1 s use, instant heal + heal over time, stops bleeding.
+- **Items** (recipes adapted to Minecraft crafting and stack sizes, not Rust's numbers):
+  - **Bandage** (cloth): 2 s use time, stops bleeding, heals a little instantly.
+  - **Medical syringe** (cloth + `metal` + low grade fuel; there is no "metal fragments" item): 1 s use, instant heal + heal over time, stops bleeding.
   - **Large medkit** (stretch): long use, big heal over time, stops bleeding.
   - **Anti-radiation pills**: removes radiation poisoning.
   - **Tea / herbal remedy** (stretch).
-- **Steps:** Create `MedicalItem` with configurable use time (`getMaxUseTime`, `UseAction.BOW`/custom), with effects applied in `finishUsing`. Add a cooldown so it can't be spammed. Show a "healing" indicator in the HUD (P1.9). Add crafting recipes via datagen, and also make these items loot in medical crates (Phase 5). Optional: right-click another player to heal them, as in Rust.
-- **Done when:** All the items work and can be crafted or looted.
+- **Steps:** Create `MedicalItem` with configurable use time (`getMaxUseTime`, `UseAction.BOW`/custom), effects applied in `finishUsing`. Add a cooldown so it can't be spammed. Show a "healing" indicator in the HUD (P1.9). Crafting recipes via datagen; also loot in medical crates (Phase 5). Optional: right-click another player to heal them.
+- **Done when:** All the items work and can be crafted.
 - **Depends on:** P1.6, P1.5 (for pills)  **Size:** M
 
 ### P1.9 – Status HUD
 - **Goal:** One coherent HUD for the Rust stats.
-- **Description:** Rust shows a vertical list of status icons in the bottom-right corner (cold, wet, bleeding, radiation, building privilege, comfort…). Build a `StatusHud` that draws only the active statuses with value text, plus the thirst bar from P1.1. Make the position configurable.
+- **Description:** Rust shows a vertical list of status icons in the bottom-right corner (cold, wet, bleeding, radiation, building privilege, comfort…). The **skeleton** is built in P1.1b with thirst. This task finishes it: draws only the active statuses with value text, configurable position.
 - **Done when:** Bleeding, radiation, cold and later building privilege show up cleanly without overlapping.
-- **Depends on:** P1.1, P1.5, P1.6  **Size:** S–M
+- **Depends on:** P1.1b, P1.5, P1.6  **Size:** S–M
 
-### P1.10 – Cold / freezing (ToDo: "freezing → minecraft default")
+### P1.10 – Cold / freezing (ToDo: "freezing → minecraft default") — 1B
 - **Goal:** Cold that uses the vanilla freezing mechanic, made smarter.
-- **Description:** Vanilla freezing (`frozenTicks`) only happens in powder snow. Leather armor (`#freeze_immune_wearables`) prevents it.
+- **Description:** Vanilla freezing (`frozenTicks`) only happens in powder snow. Two vanilla details matter: outside powder snow vanilla **removes 2 frozen ticks every tick**, so the cold system has to add more than 2 per tick to make them go up; and wearing **any** item in `#freeze_immune_wearables` (leather) makes `canFreeze()` false, which would fully cancel this system. **Decide:** keep leather as full immunity, or remove that check (mixin) and let leather's cold protection (P1.7) do the job.
 - **Steps:**
   1. Compute a **temperature** per player: biome temperature + time of night − (wet ? penalty) + nearby heat sources (campfire, furnace, torch in hand within N blocks) + elevation.
-  2. If the temperature is below a threshold and cold protection (P1.7) isn't enough, increase `player.setFrozenTicks(...)` gradually. That reuses the vanilla frost overlay, slowness and freeze damage, which matches the ToDo ("minecraft default"). Let it go down near heat or with enough protection.
+  2. If the temperature is below a threshold and cold protection (P1.7) isn't enough, increase `player.setFrozenTicks(...)` faster than the vanilla decay. That reuses the vanilla frost overlay, slowness and freeze damage, which matches the ToDo ("minecraft default").
   3. Optional: being **wet** (in water/rain) amplifies cold. Track a `wetness` value in the attachment.
-  4. Optional: heat (desert at midday) increases thirst (P1.1 multipliers) instead of hurting you.
+  4. Heat already increases thirst through the P1.1a multipliers.
 - **Done when:** Standing in a snowy biome at night without clothes slowly freezes you, and a campfire or clothing prevents it.
 - **Depends on:** P1.7  **Size:** M
 
-### P1.11 – Optional survival extras (added, low priority)
+### P1.11 – Optional survival extras (added, low priority) — 1B
 - **Comfort:** being near a campfire, sitting in a chair or under a roof gives comfort, which boosts health regen. Ties into P1.9.
-- **Disable vanilla natural regen** (config) so that medical items matter, as in Rust.
+- **Disable vanilla natural regen** (config) so that medical items matter, as in Rust. Optionally thirst also blocks regen.
 - **Calories vs hunger:** map Rust's calories onto the vanilla hunger bar (no new bar).
 
 ---
@@ -564,7 +596,7 @@ Card doors are a monument mechanic in Rust, so they live in Phase 5 next to the 
 
 ### P5.4 – Irradiated biome (ToDo: "radiation → custom biome")
 - **Goal:** The custom biome where radiation is applied.
-- **Steps:** Write the biome JSON via `FabricDynamicRegistryProvider` (grey/green fog and sky, sparse dead trees, coarse dirt, gravel, ash particles). Add it to overworld generation with Biolith/TerraBlender (P1.5). Its radiation level comes from config. Generate more barrels and better loot spawners inside it so the risk pays off.
+- **Steps:** Write the biome JSON via `FabricDynamicRegistryProvider` (grey/green fog and sky, sparse dead trees, coarse dirt, gravel, ash particles). Add it to overworld generation with Biolith/TerraBlender (decide D3 here and add the library as a dependency). Register the biome as a source in the P1.5 radiation lookup. Its radiation level comes from config. Generate more barrels and better loot spawners inside it so the risk pays off.
 - **Depends on:** P1.5  **Size:** M
 
 ### P5.5 – Monuments (added, the main place for crates, recyclers, radiation and card doors)
@@ -723,7 +755,7 @@ Fill in the README (features, screenshots, required dependencies), CHANGELOG, a 
 |---|---|---|---|---|
 | D1 | MC version | stay 1.21 / 1.21.1 / latest | **1.21.1**, port later | P0.2 |
 | D2 | Player data storage | custom mixin NBT / Fabric attachments / Cardinal Components | **Fabric attachments** | P0.6 |
-| D3 | Overworld biome injection | TerraBlender / Biolith | Either. **Biolith** is Fabric-native | P1.5 |
+| D3 | Overworld biome injection | TerraBlender / Biolith | Either. **Biolith** is Fabric-native | P5.4 |
 | D4 | Animation library | none / GeckoLib | Start **none**, re-evaluate at P5.8/P7.1 | P5.8 |
 | D5 | Extra clothing slots | 4 vanilla slots / Accessories / Trinkets | **4 slots first** | P3.1 |
 | D6 | Vanilla crafting & items | keep / restrict | Keep, with config to restrict | P2.6 |
@@ -760,10 +792,10 @@ Fill in the README (features, screenshots, required dependencies), CHANGELOG, a 
 | Effects – bleeding → when shot | **P1.6** (+ P7.1 damage type) |
 | Effects – freezing → minecraft default | **P1.10** |
 | Property to add radiation and cold protection | **P1.7** |
-| +Thirst bar (still/move/run/jump, max 12, saturation) | **P1.1** (+ P0.6, P1.9) |
+| +Thirst bar (still/move/run/jump, max 12, saturation) | **P1.1a/b** (+ P0.6, P1.9; saturation in P1.2a) |
 | Guns | **P7.1**, **P7.3**, P7.4 |
 | Ammunition | **P7.2** |
-| Drinkable water (fluid) | **P1.2** |
+| Drinkable water (fluid) | **P1.2a**, **P1.2b** |
 | Force gamma to be low | **P1.3** |
 | BodiesBodies mod | **P8.1** |
 | Hold my items mod | **P8.2** |
@@ -781,6 +813,8 @@ Fill in the README (features, screenshots, required dependencies), CHANGELOG, a 
 4. **P0.4**: write the datagen providers, regenerate, delete the hand-made JSON, add the CI diff check.
 5. **P0.5 → P0.6**: registry helpers, then move thirst onto attachments.
 6. **P1.1**: finish thirst with the ToDo rules. This is the first "real" feature on the new foundation.
+
+Steps 1–5 are done (Phase 0, Nov 2026). **Next:** P1.1a → P1.1b → P1.3 → P1.7 → P1.2a → P1.4 (see the Phase 1 review note).
 
 ---
 

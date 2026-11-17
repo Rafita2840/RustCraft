@@ -1,7 +1,7 @@
 # RustCraft – Status
 
 > Living document, updated at the end of each task. Created in **P0.1** (Nov 2026).
-> Last full review: **end of Phase 0** (17 Nov 2026), against `master` at `d5a1e62` (PR #8, P0.8 merged).
+> Last full review: **end of Phase 0** (17 Nov 2026), against `master` at `d5a1e62` (PR #8, P0.8 merged). Phase 1 plan reviewed the same day.
 
 **Legend:** ✅ works · ⚠️ partial / has known problems · ❌ broken or missing · ⬜ not yet tested in-game
 
@@ -18,13 +18,27 @@
 | P0.1 Review & commit | Git up to date, status list exists, every problem has a task ID | ✅ | – |
 | P0.2 Version pin | Green build on pinned versions, CI passes | ✅ | Fabric API `0.107.0+1.21.1` (can be bumped to a newer `+1.21.1` build at any time) |
 | P0.3 Client/server split | No `net.minecraft.client` import in `src/main`, `runServer` starts | ✅ re-checked at the end of Phase 0: no client imports in `src/main` | – |
-| P0.4 DataGen | Only Blockbench models, textures, `fabric.mod.json`/mixins hand-written; reproducible; game looks the same | ✅ | `ModDynamicRegistryProvider`, `ModItemTagProvider` and `es_es` are **not created yet**: added by the first task that needs them (dehydration damage type in P1.1, `radiation_protective` tag in P1.7). Vending machine textures renamed in the end-of-Phase-0 cleanup (#18) |
-| P0.5 Registration cleanup | One line + datagen entry per item; tabs fill automatically | ✅ | `ModSounds`, `ModDamageTypes`, `ModEffects`, `ModComponents`, `ModEntities` and feature packages are deferred to the first task that needs them |
+| P0.4 DataGen | Only Blockbench models, textures, `fabric.mod.json`/mixins hand-written; reproducible; game looks the same | ✅ | `ModItemTagProvider` and `es_es` are **not created yet**: added by the first task that needs them. `ModDynamicRegistryProvider` was added in P1.1a (dehydration damage type). The planned `radiation_protective` tag is replaced by the `rustcraft:protection` component (P1.7, decided in the Phase 1 review). Vending machine textures renamed in the end-of-Phase-0 cleanup (#18) |
+| P0.5 Registration cleanup | One line + datagen entry per item; tabs fill automatically | ✅ | `ModSounds`, `ModEffects`, `ModComponents`, `ModEntities` and feature packages are deferred to the first task that needs them (`ModDamageTypes`: P1.1a) |
 | P0.6 Player data | Thirst survives relog, death, dimension change; no packets while unchanged | ✅ client | Old NBT thirst is **not migrated** (unreleased mod). Own sync payload instead of attachment auto-sync. Death handled with `COPY_FROM` instead of `copyOnDeath()` so respawn can reset to a different value |
 | P0.7 Config & gamerules | Thirst rates and gamma toggle come from config | ✅ | Game rule is `rustcraftThirstEnabled` (a colon can't be typed in `/gamerule`). Gamma is only stored and synced; P1.3 enforces it |
 | P0.8 Dev tooling | Every stat settable by command; ≥5 game tests in CI | ✅ 9/9 tests pass locally, CI step added | `loot roll`, `building grid show`, `spawn crate` not added (nothing to use them yet: P5.3 / P4.1; vanilla `/loot` and `/give` work meanwhile). No trade or inventory-consumption tests (P6.1 / P4.1). No test world template or Mod Menu (optional) |
 
 **Still to confirm by the owner:** CI is green on GitHub for the last runs (not visible from Claude's side), a dedicated server run since P0.6 (`runServer`, or the CI boot step), and the invalid-JSON case of `/rustcraft reload`.
+
+## Phase 1 – progress
+
+Phase 1 was reviewed on 17 Nov 2026 and split into **1A** (for M2) and **1B** (next to M4), see `docs/PLAN.md`.
+
+| Task | Part | Result | Notes |
+|---|---|---|---|
+| P1.1a Thirst: drain signals, multipliers, dehydration | 1A | ⬜ code written, waiting for build + datagen + tests | Not moved to a `thirst/` package yet (see task log) |
+| P1.1b Thirst: HUD, sprint block, game-rule sync | 1A | – | Creates the client mixin config and the general stat sync |
+| P1.3 Low gamma | 1A | – | |
+| P1.7 Protection component | 1A | – | Creates `ModComponents` |
+| P1.2a World drinking & containers | 1A | – | Includes hydration saturation (moved from P1.1) |
+| P1.4 Food (core) | 1A | – | Foods with sources in later phases are added by those tasks |
+| P1.2b, P1.5, P1.6, P1.8–P1.11 | 1B | – | |
 
 ## Features
 
@@ -43,10 +57,10 @@
 | **Crate** (9 slots) | ⚠️ | ⬜ | No loot table or refill. Screen title is hard-coded English (#29) | P5.1 |
 | **Vending machine** | ⚠️ | ⚠️ | Model, item model and GUI texture work. **Trading doesn't work** (#26) | P6.1 |
 | **Thirst – storage / sync** | ✅ | ✅ | Fabric data attachment; one sync packet, only when the value changes | – |
-| **Thirst – drain** | ⚠️ | ✅ | Config-driven (P0.7) and covered by game tests. Speed thresholds still unmeasured, jumping not detected (#5) | P1.1 |
+| **Thirst – drain** | ✅ (P1.1a) | ⬜ | Position change per tick, sprint while moving, jumps from `Stats.JUMP`; cap 12, then ×1.5 hot biome / ×2 Nether. Skips creative/spectator. Game tests | P1.1a |
 | **Thirst – start / respawn values** | ✅ | ✅ | Start 20, respawn 10, both in `config/rustcraft.json` | – |
-| **Thirst – consequences** | ❌ | – | Thirst 0 does nothing (#6) | P1.1 |
-| **Thirst – HUD** | ⚠️ | ⚠️ | Overlaps air bubbles and mount health (#7); still shown when `rustcraftThirstEnabled` is false | P1.1, P1.9 |
+| **Thirst – consequences** | ⚠️ | ⬜ | Dehydration damage done (P1.1a, starvation difficulty rule). Sprint block below 3 droplets still missing | P1.1b |
+| **Thirst – HUD** | ⚠️ | ⚠️ | Overlaps air bubbles and mount health (#7); still shown when `rustcraftThirstEnabled` is false (#32) | P1.1b, P1.9 |
 | **Low gamma** | ⚠️ | – | `gamma.forceLow` / `maxGamma` stored and synced, not enforced | P1.3 |
 | **Creative tabs** | ✅ | ✅ | Filled automatically from `ModCategory` | – |
 | **DataGen** | ✅ | ✅ | CI fails if `src/main/generated` is stale | – |
@@ -63,9 +77,9 @@
 | 2 | `HammerItem` / `BlueprintFloorItem` imported `Screen` | ✅ fixed (`TooltipKeys`) | P0.3 |
 | 3 | Thirst started at 0, respawn 10, max 20 | ✅ fixed: start 20, respawn 10, configurable | P0.6, P0.7 |
 | 4 | Saturation packet every tick | ✅ fixed (removed) | P0.6 |
-| 5 | Speed thresholds don't match real speeds; jumping not detected | ❌ open | P1.1 |
-| 6 | Thirst 0 does nothing; only the debug block gives water | ❌ open | P1.1, P1.2 |
-| 7 | HUD overlaps air bubbles / mount health | ❌ open (confirmed in-game) | P1.1 |
+| 5 | Speed thresholds don't match real speeds; jumping not detected | ✅ fixed (position change + jump stat) | P1.1a |
+| 6 | Thirst 0 does nothing; only the debug block gives water | ⚠️ dehydration damage added; water still debug-only | P1.1a, P1.2a |
+| 7 | HUD overlaps air bubbles / mount health | ❌ open (confirmed in-game) | P1.1b |
 | 8 | `strength(-1)` → zero explosion resistance | ❌ open | P4.3 |
 | 9 | `wooden_building_stairs` without assets; blueprints missing from tab | ✅ stairs removed (P0.4); tab: decision (P0.5) | P0.4, P0.5 |
 | 10 | Data-saver mixin injected into every entity | ✅ fixed (attachments, mixin removed) | P0.6 |
@@ -86,6 +100,15 @@
 | 25 | Vending machine GUI texture path wrong | ✅ fixed | P0.4 |
 | 26 | Vending machine stock / trading doesn't work | ❌ open | P6.1 |
 | 27 | `text.rustcraft.cant_place_stairs` had no lang entry | ✅ fixed | P0.4 |
+
+### Found in the Phase 1 review
+
+| # | Problem | Where | Task |
+|---|---|---|---|
+| 32 | The `rustcraftThirstEnabled` game rule is never sent to the client, so the HUD can't hide when it's off | `ServerConfigSyncS2CPayload` | P1.1b |
+| 33 | Creative and spectator players lost thirst (only the HUD hid itself) | `PlayerTickHandler` | ✅ fixed (P1.1a) |
+| 34 | Config option `sprintDrain` was really the ToDo's jump value | `RustConfig` | ✅ renamed `jumpDrain` (P1.1a) |
+| 35 | Stat sync only compares `thirst`; every new displayed stat would need its own check | `PlayerStats.set`, `PlayerStatsSyncS2CPayload` | P1.1b |
 
 ### Found in the end-of-Phase-0 review
 
@@ -135,3 +158,15 @@ Providers in `datagen/`: models/blockstates (Blockbench models stay hand-made), 
 Fixes from the review: vending machine textures renamed (#18), dead `merchant` package removed (#28), crate title from lang (#29), `ModBlockEntities` on the vanilla builder with the crate id renamed to `crate` (#30), README updated (#31).
 
 Result: ⬜ pending.
+
+### P1.1a – Thirst drain signals, multipliers, dehydration
+- `PlayerTickHandler` tracks each player's position and jump count per tick: moving = horizontal position change (not while riding), running = sprinting while moving, jumped = `Stats.JUMP` went up. Creative, spectator and dead players are skipped.
+- `ThirstMath`: `baseDrain` (capped at `maxDrainPerTick`), `multiplier` (hot biome / Nether, not stacked), `drainPerTick`, `canDehydrationHurt` (vanilla starvation's difficulty rule).
+- `RustPlayerData.thirstExhaustion` is now a `float` (old saves still load).
+- Config: `sprintDrain` → `jumpDrain`; new `maxDrainPerTick`, `hotBiomeTemperature`, `hotBiomeMultiplier`, `netherMultiplier`, `dehydrationDamage`, `dehydrationDamageInterval`. An existing `config/rustcraft.json` loses `sprintDrain` and gets the new options on the next start.
+- New `damage/ModDamageTypes` with `rustcraft:dehydration`; datagen `ModDynamicRegistryProvider` + `ModDamageTypeTagProvider` (bypasses armor and effects, **no knockback**); death messages in lang.
+- Game tests: 9 → 12 (drain tests rewritten for the new inputs, plus cap, multipliers, difficulty rule, damage type registered with its armor and knockback tags).
+- Fix found in-game: dehydration pushed the player a little on every hit because the type was missing from `#minecraft:no_knockback` (vanilla starvation is in it). Added.
+- **Not done:** moving `ThirstMath` and `PlayerTickHandler` into a `thirst/` package (rule 0.3.4). Do it with an IDE refactor (move class) in this PR or the next.
+
+Result: ⬜ pending (`runDatagen`, `build`, `runGametest`, in-game check).

@@ -4,12 +4,19 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
+import net.minecraft.entity.damage.DamageType;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.test.GameTest;
 import net.minecraft.test.TestContext;
+import net.minecraft.world.Difficulty;
 import net.rafa.rustcraft.config.ModGameRules;
 import net.rafa.rustcraft.config.RustConfig;
+import net.rafa.rustcraft.damage.ModDamageTypes;
 import net.rafa.rustcraft.data.RustPlayerData;
 import net.rafa.rustcraft.data.ThirstMath;
+import net.rafa.rustcraft.util.ModTags;
 
 import java.io.StringReader;
 
@@ -30,22 +37,57 @@ public class RustCraftGameTests implements FabricGameTest {
     }
 
     @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
-    public void thirstDrainDependsOnMovement(TestContext context) {
+    public void thirstDrainDependsOnActivity(TestContext context) {
         RustConfig.Thirst defaults = new RustConfig.Thirst();
-        checkEquals(1, ThirstMath.drainPerTick(0f, defaults), "standing still");
-        checkEquals(3, ThirstMath.drainPerTick(0.05f, defaults), "walking");
-        checkEquals(10, ThirstMath.drainPerTick(0.15f, defaults), "running");
-        checkEquals(12, ThirstMath.drainPerTick(0.25f, defaults), "sprinting");
+        checkEquals(1, ThirstMath.baseDrain(false, false, false, defaults), "standing still");
+        checkEquals(3, ThirstMath.baseDrain(true, false, false, defaults), "walking");
+        checkEquals(10, ThirstMath.baseDrain(true, true, false, defaults), "sprinting");
+        checkEquals(12, ThirstMath.baseDrain(true, true, true, defaults), "sprint-jumping");
+        checkEquals(3, ThirstMath.baseDrain(false, false, true, defaults), "jumping in place");
+        checkEquals(1, ThirstMath.baseDrain(false, true, false, defaults), "sprinting into a wall counts as idle");
         context.complete();
     }
 
     @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
-    public void thirstDrainUsesConfigValues(TestContext context) {
+    public void thirstDrainUsesConfigValuesAndCap(TestContext context) {
         RustConfig.Thirst custom = new RustConfig.Thirst();
         custom.idleDrain = 4;
         custom.walkDrain = 0;
-        checkEquals(4, ThirstMath.drainPerTick(0f, custom), "custom idle");
-        checkEquals(4, ThirstMath.drainPerTick(0.05f, custom), "custom walking");
+        checkEquals(4, ThirstMath.baseDrain(false, false, false, custom), "custom idle");
+        checkEquals(4, ThirstMath.baseDrain(true, false, false, custom), "custom walking");
+        custom.maxDrainPerTick = 5;
+        checkEquals(5, ThirstMath.baseDrain(true, true, true, custom), "capped");
+        context.complete();
+    }
+
+    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
+    public void heatMultipliesDrainAfterTheCap(TestContext context) {
+        RustConfig.Thirst defaults = new RustConfig.Thirst();
+        checkEquals(1f, ThirstMath.multiplier(false, 0.8f, defaults), "plains");
+        checkEquals(1.5f, ThirstMath.multiplier(false, 2.0f, defaults), "desert");
+        checkEquals(2f, ThirstMath.multiplier(true, 2.0f, defaults), "nether replaces hot biome");
+        checkEquals(18f, ThirstMath.drainPerTick(true, true, true, false, 2.0f, defaults), "sprint-jumping in a desert");
+        context.complete();
+    }
+
+    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
+    public void dehydrationFollowsDifficultyLikeStarvation(TestContext context) {
+        check(!ThirstMath.canDehydrationHurt(20f, Difficulty.PEACEFUL), "peaceful never hurts");
+        check(ThirstMath.canDehydrationHurt(11f, Difficulty.EASY), "easy hurts above 5 hearts");
+        check(!ThirstMath.canDehydrationHurt(10f, Difficulty.EASY), "easy stops at 5 hearts");
+        check(!ThirstMath.canDehydrationHurt(1f, Difficulty.NORMAL), "normal stops at half a heart");
+        check(ThirstMath.canDehydrationHurt(1f, Difficulty.HARD), "hard can kill");
+        context.complete();
+    }
+
+    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
+    public void dehydrationDamageTypeIsRegistered(TestContext context) {
+        Registry<DamageType> damageTypes = context.getWorld().getRegistryManager().get(RegistryKeys.DAMAGE_TYPE);
+        check(damageTypes.contains(ModDamageTypes.DEHYDRATION), "rustcraft:dehydration missing: run ./gradlew runDatagen");
+        check(damageTypes.entryOf(ModDamageTypes.DEHYDRATION).isIn(DamageTypeTags.BYPASSES_ARMOR),
+                "dehydration should bypass armor");
+        check(damageTypes.entryOf(ModDamageTypes.DEHYDRATION).isIn(ModTags.DamageTypes.NO_KNOCKBACK),
+                "dehydration should be in #minecraft:no_knockback, or it pushes the player");
         context.complete();
     }
 
@@ -53,7 +95,7 @@ public class RustCraftGameTests implements FabricGameTest {
     public void exhaustionBuildsUpBeforeThirstDrops(TestContext context) {
         RustPlayerData result = ThirstMath.applyDrain(new RustPlayerData(20, 0), 100, 5000);
         checkEquals(20, result.thirst(), "thirst below the limit");
-        checkEquals(100, result.thirstExhaustion(), "exhaustion below the limit");
+        checkEquals(100f, result.thirstExhaustion(), "exhaustion below the limit");
         context.complete();
     }
 
@@ -61,7 +103,7 @@ public class RustCraftGameTests implements FabricGameTest {
     public void reachingTheLimitDropsThirstAndResets(TestContext context) {
         RustPlayerData result = ThirstMath.applyDrain(new RustPlayerData(20, 4950), 100, 5000);
         checkEquals(19, result.thirst(), "thirst after the limit");
-        checkEquals(0, result.thirstExhaustion(), "exhaustion after the limit");
+        checkEquals(0f, result.thirstExhaustion(), "exhaustion after the limit");
         context.complete();
     }
 
@@ -75,7 +117,7 @@ public class RustCraftGameTests implements FabricGameTest {
 
     @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
     public void playerDataSurvivesSaveAndLoad(TestContext context) {
-        RustPlayerData original = new RustPlayerData(7, 1234);
+        RustPlayerData original = new RustPlayerData(7, 1234.5f);
         JsonElement saved = RustPlayerData.CODEC.encodeStart(JsonOps.INSTANCE, original).getOrThrow();
         RustPlayerData loaded = RustPlayerData.CODEC.parse(JsonOps.INSTANCE, saved).getOrThrow();
         checkEquals(original, loaded, "round trip");
@@ -86,7 +128,7 @@ public class RustCraftGameTests implements FabricGameTest {
     public void oldSavesWithMissingFieldsStillLoad(TestContext context) {
         RustPlayerData loaded = RustPlayerData.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString("{}")).getOrThrow();
         checkEquals(RustPlayerData.MAX_THIRST, loaded.thirst(), "default thirst");
-        checkEquals(0, loaded.thirstExhaustion(), "default exhaustion");
+        checkEquals(0f, loaded.thirstExhaustion(), "default exhaustion");
         context.complete();
     }
 

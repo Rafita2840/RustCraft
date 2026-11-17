@@ -7,14 +7,18 @@ import net.rafa.rustcraft.config.RustConfig;
 /**
  * Everything the mod stores per player. Saved with the player through a Fabric data attachment.
  * New stats (radiation, bleeding, ...) are added here as new fields with a default, so old saves still load.
+ *
+ * @param thirstExhaustion hidden counter; thirst drops by 1 each time it reaches the config limit.
+ *                         A float so drain multipliers (hot biomes, the Nether) aren't rounded away.
  */
-public record RustPlayerData(int thirst, int thirstExhaustion) {
+public record RustPlayerData(int thirst, float thirstExhaustion) {
 
     public static final int MAX_THIRST = 20;
 
+    // Codec.FLOAT also reads the whole numbers that saves from before P1.1 contain
     public static final Codec<RustPlayerData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.INT.optionalFieldOf("thirst", MAX_THIRST).forGetter(RustPlayerData::thirst),
-            Codec.INT.optionalFieldOf("thirst_exhaustion", 0).forGetter(RustPlayerData::thirstExhaustion)
+            Codec.FLOAT.optionalFieldOf("thirst_exhaustion", 0f).forGetter(RustPlayerData::thirstExhaustion)
     ).apply(instance, RustPlayerData::new));
 
     /** Data of a brand new player. Reads the config, so it must not be cached in a static field. */
@@ -31,7 +35,7 @@ public record RustPlayerData(int thirst, int thirstExhaustion) {
         return new RustPlayerData(Math.max(0, Math.min(thirst, MAX_THIRST)), thirstExhaustion);
     }
 
-    public RustPlayerData withThirstExhaustion(int thirstExhaustion) {
+    public RustPlayerData withThirstExhaustion(float thirstExhaustion) {
         return new RustPlayerData(thirst, thirstExhaustion);
     }
 }
