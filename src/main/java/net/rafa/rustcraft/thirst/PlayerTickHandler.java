@@ -1,4 +1,4 @@
-package net.rafa.rustcraft.event;
+package net.rafa.rustcraft.thirst;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -12,7 +12,6 @@ import net.rafa.rustcraft.config.RustConfig;
 import net.rafa.rustcraft.damage.ModDamageTypes;
 import net.rafa.rustcraft.data.PlayerStats;
 import net.rafa.rustcraft.data.RustPlayerData;
-import net.rafa.rustcraft.data.ThirstMath;
 
 import java.util.HashMap;
 import java.util.Map;

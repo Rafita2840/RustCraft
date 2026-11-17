@@ -25,6 +25,7 @@ CI runs the build, the game tests, a datagen up-to-date check and a dedicated se
 
 Do not write JSON for models, blockstates, lang, loot tables, recipes or tags by hand. The only hand-made
 assets are the Blockbench models, textures, sounds, `fabric.mod.json` and the mixin config.
+Client mixins live in `src/client/java/.../mixin/client` with `rustcraft.client.mixins.json`.
 CI re-runs datagen and fails if `src/main/generated` is out of date.
 
 ### Client and server code

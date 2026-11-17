@@ -14,8 +14,12 @@ import net.minecraft.world.Difficulty;
 import net.rafa.rustcraft.config.ModGameRules;
 import net.rafa.rustcraft.config.RustConfig;
 import net.rafa.rustcraft.damage.ModDamageTypes;
+import io.netty.buffer.Unpooled;
+import net.minecraft.network.PacketByteBuf;
+import net.rafa.rustcraft.data.DisplayedStats;
 import net.rafa.rustcraft.data.RustPlayerData;
-import net.rafa.rustcraft.data.ThirstMath;
+import net.rafa.rustcraft.thirst.ThirstMath;
+import net.rafa.rustcraft.util.HudLayout;
 import net.rafa.rustcraft.util.ModTags;
 
 import java.io.StringReader;
@@ -147,6 +151,39 @@ public class RustCraftGameTests implements FabricGameTest {
     public void thirstGameRuleIsOnByDefault(TestContext context) {
         check(context.getWorld().getGameRules().getBoolean(ModGameRules.THIRST_ENABLED),
                 "rustcraftThirstEnabled should default to true");
+        context.complete();
+    }
+
+    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
+    public void lowThirstBlocksSprint(TestContext context) {
+        check(!ThirstMath.canSprint(0), "0 cannot sprint");
+        check(!ThirstMath.canSprint(5), "5 cannot sprint");
+        check(ThirstMath.canSprint(6), "6 can sprint");
+        check(ThirstMath.canSprint(20), "20 can sprint");
+        context.complete();
+    }
+
+    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
+    public void thirstBarKeepsItsRowAndOnlyMountHeartsRaiseIt(TestContext context) {
+        checkEquals(0, HudLayout.thirstBarRaise(0), "not riding");
+        checkEquals(0, HudLayout.thirstBarRaise(HudLayout.mountHeartCount(true, 10f)), "5 hearts = 1 row");
+        checkEquals(10, HudLayout.thirstBarRaise(HudLayout.mountHeartCount(true, 30f)), "15 hearts = 2 rows");
+        checkEquals(30, HudLayout.mountHeartCount(true, 100f), "capped at 30 hearts");
+        checkEquals(20, HudLayout.thirstBarRaise(30), "30 hearts = 3 rows");
+        checkEquals(0, HudLayout.mountHeartCount(false, 30f), "not riding");
+        checkEquals(11, HudLayout.AIR_BUBBLES_RAISE, "bubbles go one row and 1 px up");
+        context.complete();
+    }
+
+    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
+    public void displayedStatsIgnoreHiddenValuesAndRoundTrip(TestContext context) {
+        RustPlayerData a = new RustPlayerData(12, 0f);
+        RustPlayerData b = new RustPlayerData(12, 3.5f);
+        check(a.displayed().equals(b.displayed()), "same thirst, different exhaustion are equal");
+        check(!a.displayed().equals(a.withThirst(11).displayed()), "different thirst differs");
+        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+        DisplayedStats.CODEC.encode(buf, a.displayed());
+        checkEquals(a.displayed(), DisplayedStats.CODEC.decode(buf), "codec round trip");
         context.complete();
     }
 }

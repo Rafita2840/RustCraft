@@ -33,7 +33,7 @@ Phase 1 was reviewed on 17 Nov 2026 and split into **1A** (for M2) and **1B** (n
 | Task | Part | Result | Notes |
 |---|---|---|---|
 | P1.1a Thirst: drain signals, multipliers, dehydration | 1A | ⬜ code written, waiting for build + datagen + tests | Not moved to a `thirst/` package yet (see task log) |
-| P1.1b Thirst: HUD, sprint block, game-rule sync | 1A | – | Creates the client mixin config and the general stat sync |
+| P1.1b Thirst: HUD, sprint block, game-rule sync | 1A | ⬜ code written, waiting for build + tests | Creates the client mixin config and the general stat sync |
 | P1.3 Low gamma | 1A | – | |
 | P1.7 Protection component | 1A | – | Creates `ModComponents` |
 | P1.2a World drinking & containers | 1A | – | Includes hydration saturation (moved from P1.1) |
@@ -59,7 +59,7 @@ Phase 1 was reviewed on 17 Nov 2026 and split into **1A** (for M2) and **1B** (n
 | **Thirst – storage / sync** | ✅ | ✅ | Fabric data attachment; one sync packet, only when the value changes | – |
 | **Thirst – drain** | ✅ (P1.1a) | ⬜ | Position change per tick, sprint while moving, jumps from `Stats.JUMP`; cap 12, then ×1.5 hot biome / ×2 Nether. Skips creative/spectator. Game tests | P1.1a |
 | **Thirst – start / respawn values** | ✅ | ✅ | Start 20, respawn 10, both in `config/rustcraft.json` | – |
-| **Thirst – consequences** | ⚠️ | ⬜ | Dehydration damage done (P1.1a, starvation difficulty rule). Sprint block below 3 droplets still missing | P1.1b |
+| **Thirst – consequences** | ⚠️ | ⬜ | Dehydration damage done (P1.1a, starvation difficulty rule). Sprint block below 3 droplets done on the client (P1.1b, not enforced by the server) | P1.1b |
 | **Thirst – HUD** | ⚠️ | ⚠️ | Overlaps air bubbles and mount health (#7); still shown when `rustcraftThirstEnabled` is false (#32) | P1.1b, P1.9 |
 | **Low gamma** | ⚠️ | – | `gamma.forceLow` / `maxGamma` stored and synced, not enforced | P1.3 |
 | **Creative tabs** | ✅ | ✅ | Filled automatically from `ModCategory` | – |
@@ -79,7 +79,7 @@ Phase 1 was reviewed on 17 Nov 2026 and split into **1A** (for M2) and **1B** (n
 | 4 | Saturation packet every tick | ✅ fixed (removed) | P0.6 |
 | 5 | Speed thresholds don't match real speeds; jumping not detected | ✅ fixed (position change + jump stat) | P1.1a |
 | 6 | Thirst 0 does nothing; only the debug block gives water | ⚠️ dehydration damage added; water still debug-only | P1.1a, P1.2a |
-| 7 | HUD overlaps air bubbles / mount health | ❌ open (confirmed in-game) | P1.1b |
+| 7 | HUD overlaps air bubbles / mount health | ⬜ fixed in P1.1b, verify in game | P1.1b |
 | 8 | `strength(-1)` → zero explosion resistance | ❌ open | P4.3 |
 | 9 | `wooden_building_stairs` without assets; blueprints missing from tab | ✅ stairs removed (P0.4); tab: decision (P0.5) | P0.4, P0.5 |
 | 10 | Data-saver mixin injected into every entity | ✅ fixed (attachments, mixin removed) | P0.6 |
@@ -105,10 +105,10 @@ Phase 1 was reviewed on 17 Nov 2026 and split into **1A** (for M2) and **1B** (n
 
 | # | Problem | Where | Task |
 |---|---|---|---|
-| 32 | The `rustcraftThirstEnabled` game rule is never sent to the client, so the HUD can't hide when it's off | `ServerConfigSyncS2CPayload` | P1.1b |
+| 32 | The `rustcraftThirstEnabled` game rule is never sent to the client, so the HUD can't hide when it's off | `ServerConfigSyncS2CPayload` | ⬜ fixed in P1.1b |
 | 33 | Creative and spectator players lost thirst (only the HUD hid itself) | `PlayerTickHandler` | ✅ fixed (P1.1a) |
 | 34 | Config option `sprintDrain` was really the ToDo's jump value | `RustConfig` | ✅ renamed `jumpDrain` (P1.1a) |
-| 35 | Stat sync only compares `thirst`; every new displayed stat would need its own check | `PlayerStats.set`, `PlayerStatsSyncS2CPayload` | P1.1b |
+| 35 | Stat sync only compares `thirst`; every new displayed stat would need its own check | `PlayerStats.set`, `PlayerStatsSyncS2CPayload` | ⬜ fixed in P1.1b |
 
 ### Found in the end-of-Phase-0 review
 
@@ -170,3 +170,12 @@ Result: ⬜ pending.
 - **Not done:** moving `ThirstMath` and `PlayerTickHandler` into a `thirst/` package (rule 0.3.4). Do it with an IDE refactor (move class) in this PR or the next.
 
 Result: ⬜ pending (`runDatagen`, `build`, `runGametest`, in-game check).
+
+## P1.1b log
+- `DisplayedStats` record (codec) replaces the lone thirst int in the sync payload; `PlayerStats.set` syncs only when it changes (fixes #35).
+- Game rule `rustcraftThirstEnabled` is sent in `ServerConfigSyncS2CPayload` on join, `/rustcraft reload` and rule change (fixes #32); the HUD hides when it is off.
+- HUD: `StatusHud` gates (hud hidden, creative, spectator, rule); `ThirstHudOverlay` moves up for air bubbles and mount hearts (`HudLayout`, checked against 1.21.1 bytecode) (fixes #7).
+- Sprint: client mixin on `ClientPlayerEntity.canSprint`, blocked below 6 thirst (3 droplets). Not enforced by the server.
+- New client mixin config `rustcraft.client.mixins.json` (`src/client/resources`), registered in `fabric.mod.json` for the client environment.
+- Tests: sprint rule, `HudLayout`, displayed stats equality and codec.
+- Follow-up: the thirst bar keeps its row; the air bubbles move one row above it (`InGameHudMixin`, `@ModifyVariable` on the row y at the "air" step). The bar is now drawn from the end of `renderStatusBars` instead of `HudRenderCallback`, so it is in the main HUD layer and the chat draws over it. `StatusHud` is now a static helper.

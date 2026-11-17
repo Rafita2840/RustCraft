@@ -19,7 +19,7 @@ public final class PlayerStats {
     public static void set(ServerPlayerEntity player, RustPlayerData data) {
         RustPlayerData old = get(player);
         player.setAttached(ModAttachments.PLAYER_DATA, data);
-        if (old.thirst() != data.thirst()) {
+        if (!old.displayed().equals(data.displayed())) {
             sync(player);
         }
     }
@@ -36,6 +36,6 @@ public final class PlayerStats {
 
     /** Sends the displayed values to the player. Used on join, respawn and dimension change. */
     public static void sync(ServerPlayerEntity player) {
-        ServerPlayNetworking.send(player, new PlayerStatsSyncS2CPayload(get(player).thirst()));
+        ServerPlayNetworking.send(player, new PlayerStatsSyncS2CPayload(get(player).displayed()));
     }
 }
