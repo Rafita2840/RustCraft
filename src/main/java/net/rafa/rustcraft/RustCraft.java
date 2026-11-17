@@ -5,6 +5,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.rafa.rustcraft.block.ModBlocks;
 import net.rafa.rustcraft.block.entity.ModBlockEntities;
+import net.rafa.rustcraft.command.RustCommands;
 import net.rafa.rustcraft.config.ConfigSync;
 import net.rafa.rustcraft.config.ModGameRules;
 import net.rafa.rustcraft.config.RustConfig;
@@ -39,6 +40,7 @@ public class RustCraft implements ModInitializer {
 
         ModPayloads.register();
         ConfigSync.register();
+        RustCommands.register();
 
         ModAttachments.init();
         PlayerDataEvents.register();

@@ -83,6 +83,8 @@ public class ModLangProvider extends FabricLanguageProvider {
         builder.add("text.rustcraft.max_out", "Maxed out building!");
         builder.add("text.rustcraft.config_reloaded", "RustCraft config reloaded.");
         builder.add("text.rustcraft.config_reload_failed", "Could not read config/rustcraft.json, see the log. The previous values stay active.");
+        builder.add("text.rustcraft.stats_get", "%s: thirst %s/%s");
+        builder.add("text.rustcraft.stats_thirst_set", "Set thirst of %s to %s");
 
         // ── Game rules ─────────────────────────────────────────
         builder.add("gamerule.rustcraftThirstEnabled", "RustCraft: thirst enabled");

@@ -6,7 +6,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.rafa.rustcraft.config.ModGameRules;
 import net.rafa.rustcraft.config.RustConfig;
 import net.rafa.rustcraft.data.PlayerStats;
-import net.rafa.rustcraft.data.RustPlayerData;
+import net.rafa.rustcraft.data.ThirstMath;
 
 public class PlayerTickHandler implements ServerTickEvents.StartTick {
 
@@ -19,25 +19,9 @@ public class PlayerTickHandler implements ServerTickEvents.StartTick {
 
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
             float speedVariation = player.horizontalSpeed - player.prevHorizontalSpeed;
-            int amount = config.idleDrain;
-            if (speedVariation > 0f) {
-                amount += config.walkDrain;
-            }
-            if (speedVariation > 0.13f) {
-                amount += config.runDrain;
-            }
-            if (speedVariation > 0.20f) {
-                amount += config.sprintDrain;
-            }
-
-            RustPlayerData data = PlayerStats.get(player);
-            int exhaustion = data.thirstExhaustion() + amount;
-            if (exhaustion >= config.exhaustionLimit) {
-                PlayerStats.set(player, data.withThirst(data.thirst() - 1).withThirstExhaustion(0));
-            } else {
-                // Hidden counter: saved with the player but never sent to the client
-                PlayerStats.set(player, data.withThirstExhaustion(exhaustion));
-            }
+            int drain = ThirstMath.drainPerTick(speedVariation, config);
+            // The exhaustion counter is saved with the player but never sent to the client
+            PlayerStats.set(player, ThirstMath.applyDrain(PlayerStats.get(player), drain, config.exhaustionLimit));
         }
     }
 }
