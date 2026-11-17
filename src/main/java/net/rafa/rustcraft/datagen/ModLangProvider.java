@@ -81,6 +81,12 @@ public class ModLangProvider extends FabricLanguageProvider {
         builder.add("text.rustcraft.off_grid", "Off grid!");
         builder.add("text.rustcraft.not_enough_resources", "Not enough resources!");
         builder.add("text.rustcraft.max_out", "Maxed out building!");
+        builder.add("text.rustcraft.config_reloaded", "RustCraft config reloaded.");
+        builder.add("text.rustcraft.config_reload_failed", "Could not read config/rustcraft.json, see the log. The previous values stay active.");
+
+        // ── Game rules ─────────────────────────────────────────
+        builder.add("gamerule.rustcraftThirstEnabled", "RustCraft: thirst enabled");
+        builder.add("gamerule.rustcraftThirstEnabled.description", "Whether thirst drains over time");
 
         // ── Tooltips (coloured in code via ModText) ────────────
         builder.add("tooltip.rustcraft.blueprint.control_down1", "Sneak + R-Click:");

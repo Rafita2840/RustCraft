@@ -7,8 +7,10 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.rafa.rustcraft.client.ClientPlayerStats;
+import net.rafa.rustcraft.client.ClientServerConfig;
 import net.rafa.rustcraft.client.ThirstHudOverlay;
 import net.rafa.rustcraft.networking.PlayerStatsSyncS2CPayload;
+import net.rafa.rustcraft.networking.ServerConfigSyncS2CPayload;
 import net.rafa.rustcraft.screen.ModScreenHandlers;
 import net.rafa.rustcraft.screen.custom.DefaultCrateScreen;
 import net.rafa.rustcraft.screen.custom.VendingMachineScreen;
@@ -22,7 +24,13 @@ public class RustCraftClient implements ClientModInitializer {
         HudRenderCallback.EVENT.register(new ThirstHudOverlay());
         ClientPlayNetworking.registerGlobalReceiver(PlayerStatsSyncS2CPayload.PAYLOAD_ID,
                 (payload, context) -> context.client().execute(() -> ClientPlayerStats.setThirst(payload.thirst())));
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> ClientPlayerStats.reset());
+        ClientPlayNetworking.registerGlobalReceiver(ServerConfigSyncS2CPayload.PAYLOAD_ID,
+                (payload, context) -> context.client().execute(
+                        () -> ClientServerConfig.set(payload.forceLowGamma(), payload.maxGamma())));
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+            ClientPlayerStats.reset();
+            ClientServerConfig.reset();
+        });
         HandledScreens.register(ModScreenHandlers.CRATE_SCREEN_HANDLER, DefaultCrateScreen::new);
         HandledScreens.register(ModScreenHandlers.VENDING_MACHINE_SCREEN_HANDLER, VendingMachineScreen::new);
     }

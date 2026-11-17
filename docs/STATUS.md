@@ -156,4 +156,18 @@ Result: ✅ client and datagen run fine.
 - Decision: old thirst data in existing test worlds is **not migrated** (the mod is unreleased); those players simply start with the default.
 - Fabric attachment auto-sync was not used because it is not confirmed for the 1.21.1 builds of Fabric API; the plan allows our own payload in that case.
 
+Result: ✅ client works (dedicated server not yet ticked).
+
+## P0.7 – Configuration & gamerules
+
+- **Config file:** `config/rustcraft.json` (created on first start, rewritten on every load so new options appear). Hand-rolled with Gson, no extra library. A broken file is not overwritten: the old values stay and the error is logged. Values are clamped to sane ranges.
+  - `thirst`: `startThirst` (20), `respawnThirst` (10), `exhaustionLimit` (5000), `idleDrain` (1), `walkDrain` (2), `runDrain` (7), `sprintDrain` (2). Defaults reproduce the old behaviour exactly.
+  - `gamma`: `forceLow` (false) and `maxGamma` (0.5). Only stored and synced for now; **P1.3 does the enforcing**, so the default is off.
+- **Sync:** `ServerConfigSyncS2CPayload` (gamma values) is sent on join and after a reload. The client keeps it in `ClientServerConfig` and resets it on disconnect.
+- **`/rustcraft reload`** (permission level 2): re-reads the file and re-sends it to everyone, so values can be tuned without restarting.
+- **Game rule:** `rustcraftThirstEnabled` (default true). When false, thirst does not drain. Named in camelCase with no `rustcraft:` prefix, because a colon cannot be typed in `/gamerule` (the plan said `rustcraft:thirstEnabled`).
+- `RustPlayerData.DEFAULT` and the thirst constants are gone; `initial()` / `afterDeath()` read the config.
+- Not done on purpose: the HUD still shows the thirst bar when the rule is off (P1.9 can hide it); damage, upkeep and regen options are added by the tasks that introduce them (each adds its own field or rule).
+- Needs `./gradlew runDatagen` (new lang keys for the game rule and the reload messages).
+
 Result: ⬜ pending.
