@@ -171,7 +171,7 @@ public class RustCraftGameTests implements FabricGameTest {
         checkEquals(30, HudLayout.mountHeartCount(true, 100f), "capped at 30 hearts");
         checkEquals(20, HudLayout.thirstBarRaise(30), "30 hearts = 3 rows");
         checkEquals(0, HudLayout.mountHeartCount(false, 30f), "not riding");
-        checkEquals(10, HudLayout.AIR_BUBBLES_RAISE, "bubbles go one row up");
+        checkEquals(11, HudLayout.AIR_BUBBLES_RAISE, "bubbles go one row and 1 px up");
         context.complete();
     }
 
