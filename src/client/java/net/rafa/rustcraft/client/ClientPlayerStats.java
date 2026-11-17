@@ -7,7 +7,7 @@ import net.rafa.rustcraft.data.RustPlayerData;
  * creates a new player entity on respawn and dimension change.
  */
 public final class ClientPlayerStats {
-    private static int thirst = RustPlayerData.START_THIRST;
+    private static int thirst = RustPlayerData.MAX_THIRST;
 
     private ClientPlayerStats() {}
 
@@ -15,5 +15,5 @@ public final class ClientPlayerStats {
 
     public static void setThirst(int value) { thirst = value; }
 
-    public static void reset() { thirst = RustPlayerData.START_THIRST; }
+    public static void reset() { thirst = RustPlayerData.MAX_THIRST; }
 }

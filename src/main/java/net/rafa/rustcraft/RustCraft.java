@@ -5,6 +5,9 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.rafa.rustcraft.block.ModBlocks;
 import net.rafa.rustcraft.block.entity.ModBlockEntities;
+import net.rafa.rustcraft.config.ConfigSync;
+import net.rafa.rustcraft.config.ModGameRules;
+import net.rafa.rustcraft.config.RustConfig;
 import net.rafa.rustcraft.data.ModAttachments;
 import net.rafa.rustcraft.data.PlayerDataEvents;
 import net.rafa.rustcraft.event.PlayerTickHandler;
@@ -21,6 +24,10 @@ public class RustCraft implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+        // Config first: other systems read it while registering and ticking
+        RustConfig.load();
+        ModGameRules.init();
+
         // Items and blocks first: the creative tabs are filled from what they registered
         ModItems.registerModItems();
         ModBlocks.registerModBlocks();
@@ -31,6 +38,7 @@ public class RustCraft implements ModInitializer {
         ServerTickEvents.START_SERVER_TICK.register(new PlayerTickHandler());
 
         ModPayloads.register();
+        ConfigSync.register();
 
         ModAttachments.init();
         PlayerDataEvents.register();

@@ -13,7 +13,7 @@ public final class ModAttachments {
     public static final AttachmentType<RustPlayerData> PLAYER_DATA = AttachmentRegistry.<RustPlayerData>create(
             Identifier.of(RustCraft.MOD_ID, "player_data"),
             builder -> builder
-                    .initializer(() -> RustPlayerData.DEFAULT)
+                    .initializer(RustPlayerData::initial)
                     .persistent(RustPlayerData.CODEC));
 
     /** Call once from onInitialize so the attachment is registered before any world loads. */

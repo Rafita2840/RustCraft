@@ -16,7 +16,7 @@ public final class PlayerDataEvents {
         ServerPlayerEvents.COPY_FROM.register((oldPlayer, newPlayer, alive) -> {
             RustPlayerData data = alive
                     ? oldPlayer.getAttachedOrCreate(ModAttachments.PLAYER_DATA)
-                    : RustPlayerData.DEFAULT.withThirst(RustPlayerData.RESPAWN_THIRST);
+                    : RustPlayerData.afterDeath();
             newPlayer.setAttached(ModAttachments.PLAYER_DATA, data);
         });
 
