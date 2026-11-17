@@ -27,7 +27,7 @@ public class CrateBlockEntity extends BlockEntity implements ImplementedInventor
     private final DefaultedList<ItemStack> inventory = DefaultedList.ofSize(9, ItemStack.EMPTY);
 
     public CrateBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.CRATE_BE, pos, state);
+        super(ModBlockEntities.CRATE, pos, state);
     }
 
     public DefaultedList<ItemStack> getItems(){
@@ -53,7 +53,7 @@ public class CrateBlockEntity extends BlockEntity implements ImplementedInventor
 
     @Override
     public Text getDisplayName() {
-        return Text.literal("Crate");
+        return Text.translatable(getCachedState().getBlock().getTranslationKey());
     }
 
     @Override

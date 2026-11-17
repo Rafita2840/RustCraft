@@ -1,188 +1,137 @@
 # RustCraft – Status
 
 > Living document, updated at the end of each task. Created in **P0.1** (Nov 2026).
-> Audited commit: `3cab212` ("Added PLAN.md", `master`).
+> Last full review: **end of Phase 0** (17 Nov 2026), against `master` at `d5a1e62` (PR #8, P0.8 merged).
 
 **Legend:** ✅ works · ⚠️ partial / has known problems · ❌ broken or missing · ⬜ not yet tested in-game
 
-## How this audit was done
+## How this is checked
 
-- **Static review** of every file in `src/` (code, models, blockstates, lang, textures) against `docs/PLAN.md` §1.2. The "Code" column reflects this.
-- **Build, `runClient`, `runServer` and in-game tests** were run by the project owner. Results are in the "In-game" column; ⬜ means not tested yet.
+- **Static review** of every file in `src/` against `docs/PLAN.md`. The "Code" column reflects this.
+- **Build, `runClient`, `runServer`, `runDatagen`, `runGametest` and in-game tests** are run by the project owner. Results are in the "In-game" column.
+- **CI** (`.github/workflows/build.yml`) on every push and PR: build → game tests → datagen up-to-date check → dedicated server boot.
 
-## Git state (P0.1 step 1)
+## Phase 0 – summary
 
-| Check | Result |
-|---|---|
-| Vending-machine rewrite pushed | ✅ `VendingMachine*` classes, `VendingTradePacket`, `VendingMachineScreen(Handler)` are on `master` |
-| Old `ResourceVendingMachine*` classes removed | ✅ none left in `src/` |
-| Leftover naming from the old version | ⚠️ the block models still point at `resource_vending_machine_block*` textures → P0.4 |
-| `gradlew` executable bit | ⚠️ stored as mode `100644`; CI does `chmod +x`, local Windows is fine → P0.2 |
+| Task | Done when (PLAN) | Result | Differences from the plan |
+|---|---|---|---|
+| P0.1 Review & commit | Git up to date, status list exists, every problem has a task ID | ✅ | – |
+| P0.2 Version pin | Green build on pinned versions, CI passes | ✅ | Fabric API `0.107.0+1.21.1` (can be bumped to a newer `+1.21.1` build at any time) |
+| P0.3 Client/server split | No `net.minecraft.client` import in `src/main`, `runServer` starts | ✅ re-checked at the end of Phase 0: no client imports in `src/main` | – |
+| P0.4 DataGen | Only Blockbench models, textures, `fabric.mod.json`/mixins hand-written; reproducible; game looks the same | ✅ | `ModDynamicRegistryProvider`, `ModItemTagProvider` and `es_es` are **not created yet**: added by the first task that needs them (dehydration damage type in P1.1, `radiation_protective` tag in P1.7). Vending machine textures renamed in the end-of-Phase-0 cleanup (#18) |
+| P0.5 Registration cleanup | One line + datagen entry per item; tabs fill automatically | ✅ | `ModSounds`, `ModDamageTypes`, `ModEffects`, `ModComponents`, `ModEntities` and feature packages are deferred to the first task that needs them |
+| P0.6 Player data | Thirst survives relog, death, dimension change; no packets while unchanged | ✅ client | Old NBT thirst is **not migrated** (unreleased mod). Own sync payload instead of attachment auto-sync. Death handled with `COPY_FROM` instead of `copyOnDeath()` so respawn can reset to a different value |
+| P0.7 Config & gamerules | Thirst rates and gamma toggle come from config | ✅ | Game rule is `rustcraftThirstEnabled` (a colon can't be typed in `/gamerule`). Gamma is only stored and synced; P1.3 enforces it |
+| P0.8 Dev tooling | Every stat settable by command; ≥5 game tests in CI | ✅ 9/9 tests pass locally, CI step added | `loot roll`, `building grid show`, `spawn crate` not added (nothing to use them yet: P5.3 / P4.1; vanilla `/loot` and `/give` work meanwhile). No trade or inventory-consumption tests (P6.1 / P4.1). No test world template or Mod Menu (optional) |
+
+**Still to confirm by the owner:** CI is green on GitHub for the last runs (not visible from Claude's side), a dedicated server run since P0.6 (`runServer`, or the CI boot step), and the invalid-JSON case of `/rustcraft reload`.
 
 ## Features
 
 | Feature | Code | In-game | Notes | Task |
 |---|---|---|---|---|
-| **Resource items** (scrap, cloth, low grade fuel, sulfur, animal fat, stone, wood, metal, HQM) | ✅ | ⬜ | Registered, model, texture and lang all present. No source for any of them yet except `sulfur_ore` | P2.1 |
-| **Sulfur ore** | ✅ | ⬜ | Block, loot table and mineable/needs-stone tags exist. No worldgen, so it never spawns naturally | P2.1 |
-| **Low grade fuel recipe** | ✅ | ⬜ | Only recipe in the mod, hand-written JSON | P0.4 |
-| **Hammer** | ⚠️ | ⬜ | Upgrade twig→stone→metal→HQM and sneak-remove exist. Imports `client.gui.screen.Screen` in common code. Resource consumption is duplicated and fragile | P0.3, P4.1 |
-| **Blueprint – floor** | ⚠️ | ⬜ | 3×3 floor on the 3-block grid. Same `Screen` import problem | P0.3, P4.1 |
-| **Blueprint – wall** | ⚠️ | ⬜ | Works per code, but is **missing from the creative tab** | P0.5 |
-| **Blueprint – stairs** | ⚠️ | ⬜ | Places **vanilla oak stairs**, not `wooden_building_stairs`. Missing from the creative tab | P0.4, P0.5 |
-| **Building blocks** (wood/stone/metal/HQM + centers) | ⚠️ | ⬜ | All `strength(-1)`: unbreakable, but explosion resistance also drops to 0 | P4.3 |
-| **`wooden_building_stairs`** | ❌ | – | Registered but has no blockstate, model, item model or lang key, and nothing uses it. Remove it or finish it | P0.4 |
-| **Buildable grass / sand blocks** | ✅ | ⬜ | Blockstate, model, texture, lang present | – |
-| **Hazmat suit** (4 pieces) | ❌ | ⬜ | Item models reference `item/hazmat_suit_*` but **no item textures exist** (purple/black in inventory). Armor layer textures exist. No protection stat yet | P0.4, P1.7 |
-| **Drinkable block** (debug) | ⚠️ | ⬜ | Model references `block/drinkable_block` but **no texture exists**. To be removed or made creative-only | P0.4, P1.1 |
-| **Crate** (9 slots) | ⚠️ | ⬜ | Block entity and screen exist. No loot table, no refill | P5.1 |
-| **Vending machine** | ⚠️ | ⬜ | Block (2-tall, facing), block entity, trades, screen, C2S trade packet. `VendingTradePacket` imports client networking in common code | P0.3, P6.1 |
-| **Thirst – storage / sync** | ⚠️ | ⬜ | Works through a mixin that adds NBT to every entity. Re-synced on join and respawn | P0.6 |
-| **Thirst – drain logic** | ❌ | ⬜ | Speed thresholds don't match real values; jumping isn't detected; capped at 5000 then −1 thirst | P1.1 |
-| **Thirst – consequences** | ❌ | – | Thirst 0 does nothing | P1.1 |
-| **Thirst – starting value** | ❌ | ⬜ | New players start at **0**, respawn gives **10**, max is **20** | P1.1 |
-| **Thirst – HUD** | ⚠️ | ⬜ | Draws 10 droplets at `y − 53`, which overlaps air bubbles and mount health | P1.1 |
-| **Thirst – networking** | ⚠️ | – | A saturation packet is sent **every tick per player**; the client never uses it | P0.6 |
-| **Creative tabs** | ⚠️ | ⬜ | 2 tabs, filled by hand; some items missing | P0.5 |
-| **DataGen** | ❌ | – | `RustCraftDataGenerator` is empty; everything is hand-written JSON | P0.4 |
-| **Dedicated server** | ✅ | ✅ `runServer` boots | Client imports were removed from common code in P0.3 (CI boot step still to be added by hand) | P0.3 |
+| **Resource items** (scrap, cloth, low grade fuel, sulfur, animal fat, stone, wood, metal, HQM) | ✅ | ✅ in creative tab | No way to obtain them in survival yet, except sulfur from `sulfur_ore` | P2.1 |
+| **Sulfur ore** | ✅ | ⬜ | Generated loot table (silk touch / fortune) and mining tags. No worldgen, so it never spawns naturally | P2.1 |
+| **Low grade fuel recipe** | ✅ | ⬜ | Generated by `ModRecipeProvider`, with an unlock advancement | – |
+| **Hammer** | ⚠️ | ✅ upgrade and remove work | Resource consumption is duplicated and fragile (#11) | P4.1 |
+| **Blueprint – floor** | ✅ | ✅ | Will become the single Building Plan item | P4.1, P4.12 |
+| **Blueprint – wall / stairs** | ⚠️ | ⬜ | Not in a creative tab **by decision** (`/give` only). Stairs blueprint places vanilla oak stairs. Both are replaced by the Building Plan | P4.1 |
+| **Building blocks** (wood/stone/metal/HQM + centers) | ⚠️ | ✅ | All `strength(-1)`: unbreakable, but explosion resistance is 0 (#8) | P4.3 |
+| **Buildable grass / sand blocks** | ✅ | ⬜ | – | – |
+| **Hazmat suit** (4 pieces) | ⚠️ | ✅ textures | No radiation protection yet | P1.7 |
+| **Drinkable block** (debug) | ✅ | ✅ | Sneak + use adds thirst. Stays a debug block until real water exists | P1.2 |
+| **Crate** (9 slots) | ⚠️ | ⬜ | No loot table or refill. Screen title is hard-coded English (#29) | P5.1 |
+| **Vending machine** | ⚠️ | ⚠️ | Model, item model and GUI texture work. **Trading doesn't work** (#26) | P6.1 |
+| **Thirst – storage / sync** | ✅ | ✅ | Fabric data attachment; one sync packet, only when the value changes | – |
+| **Thirst – drain** | ⚠️ | ✅ | Config-driven (P0.7) and covered by game tests. Speed thresholds still unmeasured, jumping not detected (#5) | P1.1 |
+| **Thirst – start / respawn values** | ✅ | ✅ | Start 20, respawn 10, both in `config/rustcraft.json` | – |
+| **Thirst – consequences** | ❌ | – | Thirst 0 does nothing (#6) | P1.1 |
+| **Thirst – HUD** | ⚠️ | ⚠️ | Overlaps air bubbles and mount health (#7); still shown when `rustcraftThirstEnabled` is false | P1.1, P1.9 |
+| **Low gamma** | ⚠️ | – | `gamma.forceLow` / `maxGamma` stored and synced, not enforced | P1.3 |
+| **Creative tabs** | ✅ | ✅ | Filled automatically from `ModCategory` | – |
+| **DataGen** | ✅ | ✅ | CI fails if `src/main/generated` is stale | – |
+| **Config & game rules** | ✅ | ✅ | `config/rustcraft.json`, `/rustcraft reload`, `rustcraftThirstEnabled` | – |
+| **Debug commands** | ✅ | ✅ | `/rustcraft reload`, `stats get`, `stats set thirst` | – |
+| **Game tests** | ✅ | ✅ 9/9 | `./gradlew runGametest`, also in CI | – |
+| **Dedicated server** | ✅ | ✅ (P0.3) | CI boots it on every push | – |
 
-## Problems (PLAN §1.2) – verified against the code
+## Problems
 
-| # | Problem | Confirmed? | Fixed in |
+| # | Problem | Status | Task |
 |---|---|---|---|
-| 1 | `VendingTradePacket` imports `ClientPlayNetworking` (common class) | ✅ line 4 and `send()` at line 69 | P0.3 |
-| 2 | `HammerItem` / `BlueprintFloorItem` import `net.minecraft.client.gui.screen.Screen` | ✅ (`BlueprintWallItem` and `BlueprintStairsItem` do **not**) | P0.3 |
-| 3 | Thirst starts at 0, respawn sets 10, max 20 | ✅ `RustCraft` join handler reads default 0; `ServerPlayerEntityMixin` sets 10 | P1.1 |
-| 4 | Saturation packet every tick | ✅ `addSaturation` always calls `syncSaturation` | P0.6 / P1.1 |
-| 5 | Speed thresholds don't match real speeds | ⚠️ code matches the description (`> 0`, `> 0.13`, `> 0.20`); actual values still to be measured in-game | P1.1 |
-| 6 | Thirst 0 does nothing; only debug block gives water | ✅ | P1.1, P1.2 |
-| 7 | HUD overlaps air bubbles / mount health | ✅ hard-coded `y − 53`, no checks | P1.1 |
-| 8 | `strength(-1)` → zero explosion resistance | ✅ all building blocks (and the stairs) | P4.3 |
-| 9 | `wooden_building_stairs` has no assets; blueprints missing from tab | ✅ stairs and wall blueprints missing from `ModGroups` | P0.4 / P0.5 |
-| 10 | `IEntityDataSaver` mixin on every entity | ✅ `ModEntityDataSaverMixin` | P0.6 |
+| 1 | `VendingTradePacket` imported client networking in common code | ✅ fixed | P0.3 |
+| 2 | `HammerItem` / `BlueprintFloorItem` imported `Screen` | ✅ fixed (`TooltipKeys`) | P0.3 |
+| 3 | Thirst started at 0, respawn 10, max 20 | ✅ fixed: start 20, respawn 10, configurable | P0.6, P0.7 |
+| 4 | Saturation packet every tick | ✅ fixed (removed) | P0.6 |
+| 5 | Speed thresholds don't match real speeds; jumping not detected | ❌ open | P1.1 |
+| 6 | Thirst 0 does nothing; only the debug block gives water | ❌ open | P1.1, P1.2 |
+| 7 | HUD overlaps air bubbles / mount health | ❌ open (confirmed in-game) | P1.1 |
+| 8 | `strength(-1)` → zero explosion resistance | ❌ open | P4.3 |
+| 9 | `wooden_building_stairs` without assets; blueprints missing from tab | ✅ stairs removed (P0.4); tab: decision (P0.5) | P0.4, P0.5 |
+| 10 | Data-saver mixin injected into every entity | ✅ fixed (attachments, mixin removed) | P0.6 |
 | 11 | Duplicated inventory-consumption code | ⬜ not reviewed in depth | P4.1 |
-| 12 | `§` codes in lang | ✅ all text/tooltip strings | P0.4 |
-| 13 | Unused `ModMessages` | ✅ no references outside the file | P0.5 |
-| 14 | Local work not pushed | ✅ resolved, the vending rewrite is on `master` | P0.1 |
+| 12 | `§` codes in lang | ✅ fixed (`ModText`) | P0.4 |
+| 13 | Unused `ModMessages` | ✅ removed | P0.5 |
+| 14 | Local work not pushed | ✅ fixed | P0.1 |
+| 15 | Hazmat suit item textures missing | ✅ added | P0.4 |
+| 16 | `drinkable_block` texture missing | ✅ added | P0.4 |
+| 17 | `wooden_building_stairs` registered but unused | ✅ removed | P0.4 |
+| 18 | Vending machine textures still named `resource_vending_machine_block*` | ✅ renamed to `vending_machine*.png` | cleanup |
+| 19 | `gradlew` not executable in git | ✅ fixed (mode `100755`) | P0.2 |
+| 20 | `-Xmx1G` too low for Loom + datagen | ✅ `-Xmx2G` | P0.2 |
+| 21 | Template values in `fabric.mod.json` | ✅ fixed | P0.2 |
+| 22 | CI only ran `./gradlew build` | ✅ fixed: game tests, datagen check, server boot | P0.3, P0.4, P0.8 |
+| 23 | Project did not compile (vending machine codecs) | ✅ fixed and verified | P0.1 |
+| 24 | Vending machine block/item had no model | ✅ fixed | P0.4 |
+| 25 | Vending machine GUI texture path wrong | ✅ fixed | P0.4 |
+| 26 | Vending machine stock / trading doesn't work | ❌ open | P6.1 |
+| 27 | `text.rustcraft.cant_place_stairs` had no lang entry | ✅ fixed | P0.4 |
 
-### New problems found during this audit
+### Found in the end-of-Phase-0 review
 
-| # | Problem | Where | Fixed in |
+| # | Problem | Where | Task |
 |---|---|---|---|
-| 15 | Hazmat suit item textures are missing (4 files) | `textures/item/hazmat_suit_*.png` | P0.4 |
-| 16 | `drinkable_block` texture is missing | `textures/block/drinkable_block.png` | P0.4 |
-| 17 | `wooden_building_stairs` is registered but unused (blueprint places `OAK_STAIRS`) | `ModBlocks`, `BlueprintStairsItem` | P0.4 |
-| 18 | Vending machine models/textures still use the old `resource_vending_machine_block*` names | `models/block/vending_machine*.json` | P0.4 |
-| 19 | `gradlew` is not executable in git (mode 100644) | repo root | P0.2 (needs the manual chmod below) |
-| 20 | `org.gradle.jvmargs=-Xmx1G` is low for Loom + datagen | `gradle.properties` | P0.2 ✅ (see below) |
-| 21 | `fabric.mod.json` still has template values (`homepage` fabricmc.net, `suggests: another-mod`) | `fabric.mod.json` | P0.2 ✅ (see below) |
-| 23 | **Project did not compile** (vending machine used non-existent `readRegistryValue`/`writeRegistryValue`, and a lambda where a `PacketCodec` is required). Fixed by making the block entity an `ExtendedScreenHandlerFactory` with a trade codec. Needs a re-run to confirm | `VendingMachineScreenHandler`, `ModScreenHandlers`, `VendingMachineBlockEntity`, `VendingMachineTrade` | P0.1 (fixed, unverified) |
-| 22 | CI only runs `./gradlew build`: no server boot, no datagen check | `.github/workflows/build.yml` | P0.3, P0.4 |
+| 28 | Dead code: the `merchant` package (`BaseVendingMachineMerchant`, `TradeUtil`) is the old villager-trade approach and nothing uses it | `merchant/` | ✅ removed (cleanup) |
+| 29 | Crate screen title is `Text.literal("Crate")` instead of the block's lang name | `CrateBlockEntity.getDisplayName` | ✅ uses the block's name (cleanup) |
+| 30 | `ModBlockEntities` mixes the deprecated `FabricBlockEntityTypeBuilder` (the source of the "deprecated API" build note) with vanilla `BlockEntityType.Builder`; the crate id is `crate_be` while the other is `vending_machine` | `block/entity/ModBlockEntities` | ✅ both use the vanilla builder; crate id is now `crate` (crates placed before lose their contents) (cleanup) |
+| 31 | README is out of date: says to add new items to `ModGroups` (tabs are automatic now) and doesn't mention `runGametest`, `/rustcraft` commands or `config/rustcraft.json` | `README.md` | ✅ updated (cleanup) |
 
-## P0.2 – Version pin (Nov 2026)
+## Task log
 
+Short record of what each task changed. Details are in the PR messages.
+
+### P0.1 – Review & commit
+`docs/STATUS.md` created; vending machine rewrite confirmed on `master`; project made to compile again (#23); every problem given a task ID.
+
+### P0.2 – Version pin
 | Setting | Before | After |
 |---|---|---|
 | Minecraft | `1.21` | `1.21.1` |
 | Yarn | `1.21+build.9` | `1.21.1+build.3` |
-| Fabric API | `0.102.0+1.21` | `0.107.0+1.21.1` (can be bumped to the newest `+1.21.1` build) |
+| Fabric API | `0.102.0+1.21` | `0.107.0+1.21.1` |
 | Loom | `1.11-SNAPSHOT` | `1.11.8` (stable) |
 | `fabric.mod.json` | `~1.21`, template `suggests`, fabricmc.net homepage | `~1.21.1`, `suggests` removed, GitHub homepage |
 | Gradle memory | `-Xmx1G` | `-Xmx2G` |
 
-Still to do by hand: `git update-index --chmod=+x gradlew` (problem #19). Build, `runClient` and `runServer`: ✅.
+### P0.3 – Client/server split
+Loom `splitEnvironmentSourceSets()`; client code (`RustCraftClient`, HUD, screens, `client/network/ClientPackets`) in `src/client/java`; `util/TooltipKeys` replaces `Screen.hasShiftDown()` in common code; CI boots a dedicated server.
 
-## P0.3 – Client/server split (Nov 2026)
+### P0.4 – DataGen
+Providers in `datagen/`: models/blockstates (Blockbench models stay hand-made), `en_us` (build fails if anything is unnamed), sulfur ore loot table, low grade fuel recipe, block tags + `util/ModTags`. `wooden_building_stairs` removed, `§` codes replaced by `util/ModText`, README datagen workflow, CI datagen check. Hazmat and drinkable block textures added.
 
-- `build.gradle`: Loom `splitEnvironmentSourceSets()` plus the `mods { rustcraft { ... } }` block.
-- Moved to `src/client/java` (same packages): `RustCraftClient`, `client/ThirstHudOverlay`, `screen/custom/DefaultCrateScreen`, `screen/custom/VendingMachineScreen`.
-- New `client/network/ClientPackets` holds the client-side vending trade sender; `VendingTradePacket.send()` is removed (problem #1).
-- New common `util/TooltipKeys`: tooltips ask it for Shift/Control; `RustCraftClient` plugs in the real key checks, a dedicated server always gets `false` (problem #2).
-- CI (`build.yml`) now also boots a dedicated server and fails if it never reports `Done` (problem #22).
-- Result: ✅ `./gradlew build`, `runClient` and `runServer` all work. Pending: replace `.github/workflows/build.yml` by hand (protected file) so CI runs the server boot step.
+### P0.5 – Registration cleanup
+`item/ModCategory` drives registration and the creative tabs (Resources, Tools & Weapons, Clothing, Building, Deployables; Components and Medical & Food appear with their first entry). `networking/ModPayloads.register()` in one place; `ModMessages` removed. Only the floor blueprint is in a tab (decision).
 
-## P0.1 – Result
+### P0.6 – Player data
+`data/` package: `RustPlayerData` (codec), `ModAttachments.PLAYER_DATA` (persistent), `PlayerStats` (only way to change stats), `PlayerDataEvents` (join, death, dimension change). `PlayerStatsSyncS2CPayload` only on change. Client keeps values in `ClientPlayerStats`. Old mixins and thirst classes removed; `rustcraft.mixins.json` is an empty list for later tasks.
 
-Done. Build, `runClient` and `runServer` run, the creative-mode checks were done in-game, and every problem has a task ID. Anything the checks did not cover stays ⬜ in the table above (for example the exact thirst drain and respawn values), to be measured when P1.1 starts.
+### P0.7 – Config & game rules
+`config/rustcraft.json` via `RustConfig` (Gson, clamped, broken file never overwritten): thirst start/respawn/limit/drain values, gamma `forceLow`/`maxGamma`. `ServerConfigSyncS2CPayload` → `ClientServerConfig`. `/rustcraft reload`. Game rule `rustcraftThirstEnabled`.
 
-## P0.4 – DataGen (in progress)
+### P0.8 – Developer tooling
+`command/RustCommands`: `/rustcraft reload`, `stats get <player>`, `stats set thirst <0-20> [player]` (operators only). `data/ThirstMath` (pure drain rules) and `RustConfig.parse(Reader)` for testing. `src/gametest` with 9 game tests, `fabricApi.configureTests` in `build.gradle`, `runGametest` step in CI.
 
-**Step 1 (Nov 2026):** `RustCraftDataGenerator` registers `ModModelProvider` and `ModLangProvider` (package `net.rafa.rustcraft.datagen`).
-
-| Generated now | Still hand-written |
-|---|---|
-| Item models for all items, blockstates and models for sulfur ore, buildable grass/sand, drinkable block and the 8 building blocks, block item models, `en_us.json` (build fails if a block/item has no name) | Crate and vending machine (Blockbench models), `wooden_building_stairs`, loot tables, recipes, tags |
-
-Result: ✅ works.
-
-**Step 2 (Nov 2026):** added `ModBlockLootTableProvider` (sulfur ore), `ModRecipeProvider` (low grade fuel, now with an unlock advancement), `ModBlockTagProvider` (pickaxe/stone-tool tags plus new mod tags `building_blocks`, `center_building_blocks`, `buildable_surfaces`, not used by code until P4.1) and `util/ModTags`. Crate, vending machine and building blocks have no loot table because they are unbreakable.
-
-Result: ✅ works.
-
-**Step 3 (Nov 2026):**
-- Crate and vending machine blockstates are generated; their Blockbench models stay hand-made. Fixes #24 (vending machine block/item had no model).
-- Vending machine GUI texture path fixed in `VendingMachineScreen`. Fixes #25. Stock/trading (#26) is still open (P6.1).
-- `wooden_building_stairs` removed (it was unused, the blueprint places vanilla oak stairs). Fixes #17.
-- Legacy `§` colour codes removed from lang; colours are applied in code through `util/ModText`. Fixes #12.
-- New problem found and fixed: `text.rustcraft.cant_place_stairs` was used in code but had no lang entry (#27).
-- Added `README.md` (datagen workflow) and a CI step that re-runs datagen and fails if `src/main/generated` is stale.
-- Textures: hazmat suit item textures added by the project owner (#15). The drinkable block now uses the thirst droplet on a water-blue tile (#16).
-
-Result: ✅ works.
-
-**P0.4 is done.** Everything except the Blockbench models, textures and `fabric.mod.json` is generated.
-
-## P0.5 – Registration cleanup (in progress)
-
-**Step 1 (Nov 2026):**
-- `item/ModCategory`: every item and block is registered with a category (`registerItem(name, category, item)` / `registerBlock(name, category, block)`).
-- Creative tabs are generated from the categories: Resources, Tools & Weapons, Clothing, Building, Deployables (Components and Medical & Food get a tab when they get their first entry). `ModGroups` no longer lists items by hand. Design decision: there will be one Building Plan item in the long run (see P4.1 / P4.12), so only the floor blueprint is in the creative tab (under Tools); the wall and stairs blueprints are deliberately left out and are obtained with `/give` (problem #9, resolved as a decision).
-- Lang names for the tabs come from the same enum, so the lang datagen stays in sync.
-- `networking/ModPayloads.register()` registers every payload and receiver in one call. The unused `ModMessages` is removed (problem #13, needs the file to be deleted by hand).
-- `RustCraft.onInitialize` now registers items and blocks before the tabs.
-
-**Left for later steps** (not worth creating empty until something uses them): `ModSounds`, `ModDamageTypes`, `ModEffects`, `ModComponents`, `ModEntities`, and the feature packages (`thirst`, `building`, `vending`…). Each is added by the first task that needs it (P1.x, P2.x, P4.x). Moving the existing classes into feature packages is better done together with P0.6 (thirst) and P4.1 (building).
-
-Result: ✅ client and datagen run fine.
-
-## P0.6 – Player data via Fabric attachments
-
-- New `data` package: `RustPlayerData` (record with codec: thirst + hidden thirst exhaustion), `ModAttachments.PLAYER_DATA` (persistent attachment, default = full thirst), `PlayerStats` (the only way to change stats on the server), `PlayerDataEvents` (join, death, dimension change).
-- Sync: one payload, `PlayerStatsSyncS2CPayload`, sent **only when the displayed thirst changes**, and on join, respawn and dimension change. The old per-tick saturation packet is gone (problem #4). The hidden exhaustion counter is saved but never sent.
-- Client: `ClientPlayerStats` holds the last received value (the client creates a new player entity on respawn and dimension change, so it is not stored on the entity). The HUD reads it.
-- Removed: `ModEntityDataSaverMixin` (was injected into every entity, problem #10), `ServerPlayerEntityMixin`, `IEntityDataSaver`, `ThirstData`, `ThirstSaturationData`, both old thirst payloads. `rustcraft.mixins.json` is now an empty list, ready for later tasks.
-- Behaviour changes: a new player now starts with **full thirst (20)** instead of 0 (part of problem #3); death still respawns with 10. Making these values configurable stays in P1.1. Drain speeds are unchanged.
-- Decision: old thirst data in existing test worlds is **not migrated** (the mod is unreleased); those players simply start with the default.
-- Fabric attachment auto-sync was not used because it is not confirmed for the 1.21.1 builds of Fabric API; the plan allows our own payload in that case.
-
-Result: ✅ client works (dedicated server not yet ticked).
-
-## P0.7 – Configuration & gamerules
-
-- **Config file:** `config/rustcraft.json` (created on first start, rewritten on every load so new options appear). Hand-rolled with Gson, no extra library. A broken file is not overwritten: the old values stay and the error is logged. Values are clamped to sane ranges.
-  - `thirst`: `startThirst` (20), `respawnThirst` (10), `exhaustionLimit` (5000), `idleDrain` (1), `walkDrain` (2), `runDrain` (7), `sprintDrain` (2). Defaults reproduce the old behaviour exactly.
-  - `gamma`: `forceLow` (false) and `maxGamma` (0.5). Only stored and synced for now; **P1.3 does the enforcing**, so the default is off.
-- **Sync:** `ServerConfigSyncS2CPayload` (gamma values) is sent on join and after a reload. The client keeps it in `ClientServerConfig` and resets it on disconnect.
-- **`/rustcraft reload`** (permission level 2): re-reads the file and re-sends it to everyone, so values can be tuned without restarting.
-- **Game rule:** `rustcraftThirstEnabled` (default true). When false, thirst does not drain. Named in camelCase with no `rustcraft:` prefix, because a colon cannot be typed in `/gamerule` (the plan said `rustcraft:thirstEnabled`).
-- `RustPlayerData.DEFAULT` and the thirst constants are gone; `initial()` / `afterDeath()` read the config.
-- Not done on purpose: the HUD still shows the thirst bar when the rule is off (P1.9 can hide it); damage, upkeep and regen options are added by the tasks that introduce them (each adds its own field or rule).
-- Needs `./gradlew runDatagen` (new lang keys for the game rule and the reload messages).
+### End-of-Phase-0 cleanup
+Fixes from the review: vending machine textures renamed (#18), dead `merchant` package removed (#28), crate title from lang (#29), `ModBlockEntities` on the vanilla builder with the crate id renamed to `crate` (#30), README updated (#31).
 
 Result: ⬜ pending.
-
-## P0.8 – Developer tooling
-
-**Step 1 – commands** (working)
-- All `/rustcraft` commands (operators only) now live in `command/RustCommands`: `reload`, `stats get <player>`, `stats set thirst <0-20> [player]`. Radiation and bleeding get their own `stats set` entry when those stats exist.
-- Not added because nothing exists to use them yet: `loot roll` (vanilla `/loot give @s loot <table>` works; revisit with the mod's own tables in P5.3), `building grid show` (P4.1), `spawn crate` (`/give` or `/setblock`).
-
-**Step 2 – game tests** (pending)
-- `ThirstMath` holds the drain rules as plain functions; `PlayerTickHandler` uses them. `RustConfig.parse(Reader)` is split out of `load()` so it can be tested.
-- `src/gametest` (never in the mod jar): 9 tests in `RustCraftGameTests` for thirst drain per movement, config-driven drain, exhaustion limit, clamping, save/load of player data (including old saves), config parsing and clamping, and the game rule default. Run with `./gradlew runGametest`.
-- Trade execution and inventory consumption are not covered: vending stock and trading are deferred to P6.1, and there is no grid to snap to until P4.1.
-- Still to add by hand: a `game tests` step in `.github/workflows/build.yml` (`./gradlew runGametest`).
-- Not done: test world template (`run/` is git-ignored, create a superflat creative world there), Mod Menu integration (optional).
-
-Result: ⬜ pending (step 2).
